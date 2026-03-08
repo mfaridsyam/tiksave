@@ -85,27 +85,21 @@ async function downloadVideo(btn) {
 
   const origText = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Memproses...';
+  btn.innerHTML = '<span class="spin"></span> Mengunduh...';
   showProgress();
 
   try {
     if (isIOS) {
-      const convertUrl = '/api/convert-stream?url=' + encodeURIComponent(url);
-      window.open(convertUrl, '_blank');
+      window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
       document.getElementById('iosHint').classList.add('active');
     } else {
-      const response = await fetch('/api/convert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-
-      if (!response.ok) throw new Error('Gagal mengkonversi video.');
+      const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
+      if (!response.ok) throw new Error('Gagal mengunduh video.');
       const blob = await response.blob();
       saveBlobAsFile(blob, filename);
     }
   } catch (e) {
-    window.open('/api/convert-stream?url=' + encodeURIComponent(url), '_blank');
+    window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
   } finally {
     btn.disabled = false;
     btn.innerHTML = origText;
@@ -172,7 +166,6 @@ async function downloadAllImages() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ images: currentImages, username: currentUsername })
     });
-
     if (!response.ok) throw new Error('Gagal membuat ZIP');
     const blob = await response.blob();
     saveBlobAsFile(blob, `${currentUsername}_images.zip`);
@@ -264,9 +257,7 @@ async function fetchVideo() {
       dlMusic.style.display = 'none';
     }
 
-    if (isIOS) {
-      document.getElementById('iosHint').classList.add('active');
-    }
+    if (isIOS) document.getElementById('iosHint').classList.add('active');
 
     renderImages(v.images || []);
     resultCard.classList.add('active');
