@@ -1,6 +1,5 @@
 const urlInput = document.getElementById('urlInput');
 const downloadBtn = document.getElementById('downloadBtn');
-const loader = document.getElementById('loader');
 const errorBox = document.getElementById('errorBox');
 const resultCard = document.getElementById('resultCard');
 const progressBar = document.getElementById('progressBar');
@@ -63,7 +62,6 @@ function formatDuration(s) {
 function resetUI() {
   errorBox.classList.remove('active');
   resultCard.classList.remove('active');
-  loader.classList.remove('active');
   currentImages = [];
 }
 
@@ -211,7 +209,6 @@ async function fetchVideo() {
   resetUI();
   downloadBtn.disabled = true;
   document.getElementById('btnText').innerHTML = '<span class="spin"></span>';
-  loader.classList.add('active');
   showProgress();
 
   try {
@@ -268,7 +265,6 @@ async function fetchVideo() {
   } finally {
     downloadBtn.disabled = false;
     document.getElementById('btnText').textContent = 'Unduh';
-    loader.classList.remove('active');
     hideProgress();
   }
 }
