@@ -32,6 +32,10 @@ export default async function handler(req, res) {
 
     const v = data.data;
 
+    const images = v.images || v.image_post_info?.images?.map(img => img.display_image?.url_list?.[0]) || [];
+
+    const downloadUrl = v.hdplay || v.play || v.wmplay || '';
+
     return res.status(200).json({
       success: true,
       video: {
@@ -44,9 +48,10 @@ export default async function handler(req, res) {
         plays: v.play_count || 0,
         likes: v.digg_count || 0,
         comments: v.comment_count || 0,
-        downloadUrl: v.hdplay || v.play || '',
+        downloadUrl,
         music: v.music_info?.play || v.music || null,
         musicTitle: v.music_info?.title || '',
+        images: images.filter(Boolean),
       }
     });
 

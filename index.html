@@ -5,472 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TikSave — Download TikTok Tanpa Watermark</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #080B10;
-      --surface: #0E1319;
-      --surface2: #151C25;
-      --border: rgba(255,255,255,0.07);
-      --accent: #00E5FF;
-      --accent2: #FF3D6B;
-      --accent3: #A259FF;
-      --text: #F0F4F8;
-      --muted: #5A6472;
-      --success: #00E5A0;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      top: -20%; left: -10%;
-      width: 60vw; height: 60vw;
-      background: radial-gradient(circle, rgba(0,229,255,0.04) 0%, transparent 70%);
-      pointer-events: none; z-index: 0;
-    }
-    body::after {
-      content: '';
-      position: fixed;
-      bottom: -20%; right: -10%;
-      width: 50vw; height: 50vw;
-      background: radial-gradient(circle, rgba(162,89,255,0.05) 0%, transparent 70%);
-      pointer-events: none; z-index: 0;
-    }
-
-    .container {
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 0 24px;
-      position: relative;
-      z-index: 1;
-    }
-
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 28px 0 0;
-    }
-
-    .logo {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1.4rem;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .logo-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.7; }
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: rgba(0,229,255,0.1);
-      color: var(--accent);
-      border: 1px solid rgba(0,229,255,0.2);
-      letter-spacing: 0.5px;
-    }
-
-    .hero {
-      padding: 80px 0 60px;
-      text-align: center;
-    }
-
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
-      padding: 8px 16px;
-      border: 1px solid var(--border);
-      border-radius: 30px;
-    }
-
-    .hero-tag span { color: var(--accent); }
-
-    h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(2.4rem, 6vw, 4rem);
-      font-weight: 800;
-      line-height: 1.1;
-      letter-spacing: -1.5px;
-      margin-bottom: 20px;
-    }
-
-    h1 em {
-      font-style: normal;
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-sub {
-      font-size: 1.05rem;
-      color: var(--muted);
-      line-height: 1.6;
-      max-width: 480px;
-      margin: 0 auto 48px;
-      font-weight: 300;
-    }
-
-    .input-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .input-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0.4;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 12px;
-      align-items: stretch;
-    }
-
-    .url-input {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .url-input::placeholder { color: var(--muted); }
-
-    .url-input:focus {
-      border-color: rgba(0,229,255,0.4);
-      box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
-    }
-
-    .btn-download {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 12px;
-      padding: 16px 28px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      letter-spacing: 0.3px;
-    }
-
-    .btn-download:hover {
-      background: #fff;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 30px rgba(0,229,255,0.3);
-    }
-
-    .btn-download:active { transform: translateY(0); }
-    .btn-download:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .input-hint {
-      margin-top: 12px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .loader { display: none; text-align: center; padding: 40px 0; }
-    .loader.active { display: block; }
-
-    .loader-bar {
-      width: 100%; height: 3px;
-      background: var(--surface2);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-
-    .loader-bar-fill {
-      height: 100%; width: 40%;
-      background: linear-gradient(90deg, var(--accent3), var(--accent));
-      border-radius: 3px;
-      animation: slide 1.4s ease-in-out infinite;
-    }
-
-    @keyframes slide {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(350%); }
-    }
-
-    .loader-text { font-size: 0.85rem; color: var(--muted); }
-
-    .error-box {
-      display: none;
-      margin-top: 20px;
-      background: rgba(255,61,107,0.08);
-      border: 1px solid rgba(255,61,107,0.2);
-      border-radius: 12px;
-      padding: 16px 20px;
-      color: var(--accent2);
-      font-size: 0.9rem;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .error-box.active { display: flex; }
-
-    .result-card {
-      display: none;
-      margin-top: 28px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      animation: fadeUp 0.4s ease;
-    }
-
-    .result-card.active { display: block; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .result-inner { padding: 24px; }
-
-    .result-media {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-      margin-bottom: 24px;
-    }
-
-    .thumb-wrap {
-      position: relative;
-      flex-shrink: 0;
-      width: 100px; height: 140px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--surface2);
-    }
-
-    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
-
-    .thumb-badge {
-      position: absolute;
-      bottom: 6px; right: 6px;
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      font-size: 0.65rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 500;
-    }
-
-    .result-info { flex: 1; min-width: 0; }
-
-    .result-author {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .author-avatar {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--border);
-    }
-
-    .author-name {
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .author-handle { font-size: 0.78rem; color: var(--muted); }
-
-    .result-title {
-      font-size: 0.9rem;
-      color: #cdd5df;
-      line-height: 1.5;
-      margin-bottom: 14px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .result-stats { display: flex; gap: 16px; flex-wrap: wrap; }
-
-    .stat {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .divider { height: 1px; background: var(--border); margin: 0 24px; }
-
-    .download-actions {
-      padding: 20px 24px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .btn-dl {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 13px 22px;
-      border-radius: 12px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      border: none;
-    }
-
-    .btn-dl-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent3));
-      color: #000;
-      flex: 1;
-      justify-content: center;
-    }
-
-    .btn-dl-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(0,229,255,0.2);
-    }
-
-    .btn-dl-secondary {
-      background: var(--surface2);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-dl-secondary:hover {
-      border-color: rgba(162,89,255,0.4);
-      background: rgba(162,89,255,0.08);
-      transform: translateY(-2px);
-    }
-
-    .features {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin: 64px 0;
-    }
-
-    .feature {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px 20px;
-      text-align: center;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .feature:hover {
-      border-color: rgba(0,229,255,0.2);
-      transform: translateY(-3px);
-    }
-
-    .feature-icon { font-size: 1.8rem; margin-bottom: 12px; display: block; }
-
-    .feature h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .feature p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
-
-    footer {
-      text-align: center;
-      padding: 40px 0 60px;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.8;
-    }
-
-    footer strong { color: var(--accent); }
-
-    .spin {
-      display: inline-block;
-      width: 18px; height: 18px;
-      border: 2px solid rgba(0,0,0,0.3);
-      border-top-color: #000;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (max-width: 600px) {
-      .input-row { flex-direction: column; }
-      .btn-download { justify-content: center; }
-      .features { grid-template-columns: 1fr; }
-      .result-media { flex-direction: column; }
-      .thumb-wrap { width: 100%; height: 200px; }
-      h1 { font-size: 2rem; }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="container">
   <nav>
     <div class="logo">
@@ -491,10 +30,11 @@
           type="text"
           id="urlInput"
           class="url-input"
-          placeholder="Tempel link TikTok di sini... (https://tiktok.com/...)"
+          placeholder="Tempel link TikTok di sini..."
           autocomplete="off"
           spellcheck="false"
         />
+        <button class="btn-icon-action" id="pasteBtn" onclick="pasteURL()">📋 Tempel</button>
         <button class="btn-download" id="downloadBtn" onclick="fetchVideo()">
           <span id="btnIcon">⬇</span>
           <span id="btnText">Download</span>
@@ -505,7 +45,7 @@
 
     <div class="loader" id="loader">
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>
-      <div class="loader-text">Mengambil video, mohon tunggu...</div>
+      <div class="loader-text">Mengambil info video, mohon tunggu...</div>
     </div>
 
     <div class="error-box" id="errorBox">
@@ -517,12 +57,12 @@
       <div class="result-inner">
         <div class="result-media">
           <div class="thumb-wrap">
-            <img id="resCover" src="" alt="Cover" />
+            <img id="resCover" src="" alt="Cover"/>
             <span class="thumb-badge" id="resDuration"></span>
           </div>
           <div class="result-info">
             <div class="result-author">
-              <img id="resAvatar" class="author-avatar" src="" alt="Avatar" />
+              <img id="resAvatar" class="author-avatar" src="" alt="Avatar"/>
               <div>
                 <div class="author-name" id="resAuthor">—</div>
                 <div class="author-handle" id="resHandle">—</div>
@@ -540,13 +80,21 @@
 
       <div class="divider"></div>
 
-      <div class="download-actions">
-        <a id="dlVideoBtn" href="#" class="btn-dl btn-dl-primary" target="_blank" rel="noopener">
+      <div class="download-actions" id="downloadActions">
+        <button class="btn-dl btn-dl-primary" id="dlVideoBtn" onclick="downloadFile(this)">
           🎬 Download Video HD
-        </a>
-        <a id="dlMusicBtn" href="#" class="btn-dl btn-dl-secondary" target="_blank" rel="noopener" style="display:none">
+        </button>
+        <button class="btn-dl btn-dl-secondary" id="dlMusicBtn" onclick="downloadFile(this)" style="display:none">
           🎵 Download Audio
-        </a>
+        </button>
+      </div>
+
+      <div class="images-section" id="imagesSection" style="display:none">
+        <div class="images-title">
+          <span>🖼️ Gambar dalam postingan</span>
+          <button class="btn-dl-all" onclick="downloadAllImages()">⬇ Download Semua</button>
+        </div>
+        <div class="images-grid" id="imagesGrid"></div>
       </div>
     </div>
   </div>
@@ -576,94 +124,8 @@
   </footer>
 </div>
 
-<script>
-  const input = document.getElementById('urlInput');
-  const btn = document.getElementById('downloadBtn');
-  const loader = document.getElementById('loader');
-  const errorBox = document.getElementById('errorBox');
-  const resultCard = document.getElementById('resultCard');
+<div class="dl-status" id="dlStatus">⬇ Mengunduh file...</div>
 
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') fetchVideo(); });
-
-  function formatNum(n) {
-    if (!n) return '0';
-    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
-    if (n >= 1000) return (n/1000).toFixed(1)+'K';
-    return n.toString();
-  }
-
-  function formatDuration(s) {
-    if (!s) return '';
-    return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
-  }
-
-  function resetUI() {
-    errorBox.classList.remove('active');
-    errorBox.style.display = 'none';
-    resultCard.classList.remove('active');
-    loader.classList.remove('active');
-  }
-
-  async function fetchVideo() {
-    const url = input.value.trim();
-    if (!url) { input.focus(); return; }
-
-    resetUI();
-    btn.disabled = true;
-    document.getElementById('btnIcon').innerHTML = '<span class="spin"></span>';
-    document.getElementById('btnText').textContent = 'Memproses...';
-    loader.classList.add('active');
-
-    try {
-      const res = await fetch('/api/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Gagal mengambil video.');
-      }
-
-      const v = data.video;
-
-      document.getElementById('resCover').src = v.cover || '';
-      document.getElementById('resAvatar').src = v.avatar || '';
-      document.getElementById('resAuthor').textContent = v.author || 'Unknown';
-      document.getElementById('resHandle').textContent = v.authorUsername ? `@${v.authorUsername}` : '';
-      document.getElementById('resTitle').textContent = v.title || 'Video TikTok';
-      document.getElementById('resDuration').textContent = formatDuration(v.duration);
-      document.getElementById('resPlays').textContent = formatNum(v.plays);
-      document.getElementById('resLikes').textContent = formatNum(v.likes);
-      document.getElementById('resComments').textContent = formatNum(v.comments);
-
-      const dlVideo = document.getElementById('dlVideoBtn');
-      dlVideo.href = v.downloadUrl;
-
-      const dlMusic = document.getElementById('dlMusicBtn');
-      if (v.music) {
-        dlMusic.href = v.music;
-        dlMusic.style.display = 'flex';
-        dlMusic.innerHTML = `🎵 ${v.musicTitle ? v.musicTitle.substring(0,25)+'...' : 'Download Audio'}`;
-      } else {
-        dlMusic.style.display = 'none';
-      }
-
-      resultCard.classList.add('active');
-
-    } catch (err) {
-      errorBox.classList.add('active');
-      errorBox.style.display = 'flex';
-      document.getElementById('errorText').textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
-    } finally {
-      btn.disabled = false;
-      document.getElementById('btnIcon').textContent = '⬇';
-      document.getElementById('btnText').textContent = 'Download';
-      loader.classList.remove('active');
-    }
-  }
-</script>
+<script src="app.js"></script>
 </body>
 </html>
