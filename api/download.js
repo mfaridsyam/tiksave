@@ -32,9 +32,17 @@ export default async function handler(req, res) {
 
     const v = data.data;
 
-    const images = v.images || v.image_post_info?.images?.map(img => img.display_image?.url_list?.[0]) || [];
+    const downloadUrl = v.play || v.wmplay || '';
 
-    const downloadUrl = v.hdplay || v.play || v.wmplay || '';
+    let images = [];
+    if (v.images && v.images.length > 0) {
+      images = v.images;
+    } else if (v.image_post_info?.images) {
+      images = v.image_post_info.images.map(img => {
+        const urlList = img.display_image?.url_list || img.owner_watermark_image?.url_list || [];
+        return urlList[0] || '';
+      });
+    }
 
     return res.status(200).json({
       success: true,

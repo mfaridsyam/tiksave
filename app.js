@@ -120,25 +120,49 @@ async function downloadSingleImage(url, index) {
 
 async function downloadAllImages() {
   if (!currentImages.length) return;
-  showStatus(`⬇ Mengunduh ${currentImages.length} gambar...`, 15000);
-  for (let i = 0; i < currentImages.length; i++) {
-    await new Promise(r => setTimeout(r, 700));
-    try {
-      const response = await fetch('/api/proxy?url=' + encodeURIComponent(currentImages[i]));
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `${currentUsername}_image${i + 1}_${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-    } catch (e) {
-      window.open(currentImages[i], '_blank');
+
+  const btn = document.querySelector('.btn-dl-all');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '⏳ Menyiapkan...'; btn.disabled = true; }
+  showStatus(`⏳ Menyiapkan ${currentImages.length} gambar dalam ZIP...`, 20000);
+
+  try {
+    const response = await fetch('/api/zip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ images: currentImages, username: currentUsername })
+    });
+
+    if (!response.ok) throw new Error('Gagal membuat ZIP');
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `${currentUsername}_images.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    showStatus(`✅ ZIP berhasil diunduh! (${currentImages.length} gambar)`, 4000);
+  } catch (e) {
+    showStatus(`⬇ Mengunduh ${currentImages.length} gambar satu per satu...`, 20000);
+    for (let i = 0; i < currentImages.length; i++) {
+      await new Promise(r => setTimeout(r, 700));
+      try {
+        const r = await fetch('/api/proxy?url=' + encodeURIComponent(currentImages[i]));
+        const bl = await r.blob();
+        const bu = URL.createObjectURL(bl);
+        const a = document.createElement('a');
+        a.href = bu; a.download = `${currentUsername}_image${i+1}.jpg`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(bu), 5000);
+      } catch (err) { window.open(currentImages[i], '_blank'); }
     }
+    showStatus(`✅ Selesai!`, 3000);
+  } finally {
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
   }
-  showStatus(`✅ Semua ${currentImages.length} gambar selesai diunduh!`, 4000);
 }
 
 function renderImages(images) {

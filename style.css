@@ -42,7 +42,6 @@ body::after {
   z-index: 0;
 }
 
-/* ===== LAYOUT ===== */
 .container {
   max-width: 780px;
   margin: 0 auto;
@@ -51,7 +50,6 @@ body::after {
   z-index: 1;
 }
 
-/* ===== NAV ===== */
 nav {
   display: flex;
   align-items: center;
@@ -93,7 +91,6 @@ nav {
   letter-spacing: 0.5px;
 }
 
-/* ===== HERO ===== */
 .hero {
   padding: 80px 0 60px;
   text-align: center;
@@ -141,7 +138,6 @@ h1 em {
   font-weight: 300;
 }
 
-/* ===== INPUT CARD ===== */
 .input-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -243,7 +239,6 @@ h1 em {
   gap: 6px;
 }
 
-/* ===== LOADER ===== */
 .loader { display: none; text-align: center; padding: 30px 0; }
 .loader.active { display: block; }
 
@@ -269,7 +264,6 @@ h1 em {
 
 .loader-text { font-size: 0.85rem; color: var(--muted); }
 
-/* ===== ERROR ===== */
 .error-box {
   display: none;
   margin-top: 20px;
@@ -381,7 +375,6 @@ h1 em {
 
 .divider { height: 1px; background: var(--border); }
 
-/* ===== DOWNLOAD BUTTONS ===== */
 .download-actions {
   padding: 20px 24px;
   display: flex;
@@ -431,7 +424,6 @@ h1 em {
   transform: translateY(-2px);
 }
 
-/* ===== IMAGE GALLERY ===== */
 .images-section { padding: 0 24px 24px; }
 
 .images-title {
@@ -494,7 +486,6 @@ h1 em {
 
 .img-item:hover .img-dl-btn { opacity: 1; }
 
-/* ===== DOWNLOAD STATUS TOAST ===== */
 .dl-status {
   display: none;
   position: fixed;
@@ -517,7 +508,6 @@ h1 em {
 
 .dl-status.show { display: block; }
 
-/* ===== FEATURES ===== */
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -550,7 +540,6 @@ h1 em {
 
 .feature p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
-/* ===== FOOTER ===== */
 footer {
   text-align: center;
   padding: 40px 0 60px;
@@ -562,7 +551,6 @@ footer {
 
 footer strong { color: var(--accent); }
 
-/* ===== SPINNER ===== */
 .spin {
   display: inline-block;
   width: 16px; height: 16px;
@@ -574,7 +562,6 @@ footer strong { color: var(--accent); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
   .input-row { flex-wrap: wrap; }
   .url-input { min-width: 0; }
