@@ -5,35 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>TikSave — Download TikTok Tanpa Watermark</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="progress-bar" id="progressBar"></div>
-<div class="container">
 
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="container">
   <nav>
-    <div class="logo">Tik<span>Save</span></div>
-    <span class="nav-tag">Tanpa Watermark</span>
+    <div class="logo">TikSave<span class="logo-dot"></span></div>
+    <span class="nav-badge">Tanpa Watermark</span>
   </nav>
 
   <div class="hero">
-    <div class="issue-line">
-      <div class="issue-dot"></div>
-      <span class="issue-label">Downloader Gratis &nbsp;·&nbsp; HD Quality</span>
-    </div>
+    <h1>Download TikTok<br><span>tanpa watermark</span></h1>
+    <p class="hero-sub">Tempel link TikTok, klik unduh. Gratis selamanya.</p>
 
-    <h1>Download TikTok<br><em>Tanpa Watermark</em></h1>
-
-    <div class="hero-rule">
-      <div class="hero-rule-line"></div>
-      <div class="hero-rule-diamond"></div>
-      <div class="hero-rule-line"></div>
-    </div>
-
-    <p class="hero-sub">Tempel link, klik unduh. Simpan video &amp; foto TikTok dalam kualitas terbaik.</p>
-
-    <div class="input-card">
+    <div class="input-wrap">
       <div class="input-row">
         <input
           type="text"
@@ -43,15 +32,17 @@
           autocomplete="off"
           spellcheck="false"
         />
-        <button class="btn-paste" id="pasteBtn" onclick="pasteURL()">Tempel</button>
-        <button class="btn-main" id="downloadBtn" onclick="fetchVideo()">
-          <span id="btnText">Unduh</span>
-        </button>
+        <div class="input-buttons">
+          <button class="btn-secondary" id="pasteBtn" onclick="pasteURL()">Tempel</button>
+          <button class="btn-primary" id="downloadBtn" onclick="fetchVideo()">
+            <span id="btnText">Unduh</span>
+          </button>
+        </div>
       </div>
     </div>
 
     <div class="loader" id="loader">
-      <div class="loader-track"><div class="loader-fill"></div></div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
 
     <div class="error-box" id="errorBox">
@@ -63,7 +54,7 @@
         <div class="result-media">
           <div class="thumb-wrap">
             <img id="resCover" src="" alt="Cover"/>
-            <span class="thumb-badge" id="resDuration"></span>
+            <span class="thumb-duration" id="resDuration"></span>
           </div>
           <div class="result-info">
             <div class="result-author">
@@ -75,25 +66,32 @@
             </div>
             <div class="result-title" id="resTitle"></div>
             <div class="result-stats">
-              <div class="stat"><span id="resPlays"></span></div>
-              <div class="stat"><span id="resLikes"></span></div>
-              <div class="stat"><span id="resComments"></span></div>
+              <span class="stat" id="resPlays"></span>
+              <span class="stat" id="resLikes"></span>
+              <span class="stat" id="resComments"></span>
             </div>
           </div>
         </div>
       </div>
+
       <div class="divider"></div>
-      <div class="download-actions" id="downloadActions">
-        <button class="btn-dl btn-dl-primary" id="dlVideoBtn" onclick="downloadFile(this)">
-          Video HD
+
+      <div class="dl-actions">
+        <button class="btn-dl btn-dl-video" id="dlVideoBtn" onclick="downloadVideo(this)">
+          Unduh Video
         </button>
-        <button class="btn-dl btn-dl-secondary" id="dlMusicBtn" onclick="downloadFile(this)" style="display:none">
+        <button class="btn-dl btn-dl-audio" id="dlMusicBtn" onclick="downloadAudio(this)" style="display:none">
           Audio
         </button>
       </div>
+
+      <div class="ios-hint" id="iosHint">
+        📱 <strong>Pengguna iPhone:</strong> Setelah file terbuka, tekan lama pada video lalu pilih <em>"Simpan ke Foto"</em> untuk menyimpan ke galeri.
+      </div>
+
       <div class="images-section" id="imagesSection" style="display:none">
-        <div class="images-title">
-          <span>Foto dalam postingan</span>
+        <div class="images-header">
+          <span class="images-label">Foto dalam postingan</span>
           <button class="btn-dl-all" onclick="downloadAllImages()">Unduh Semua</button>
         </div>
         <div class="images-grid" id="imagesGrid"></div>
@@ -103,25 +101,27 @@
 
   <div class="features">
     <div class="feature">
-      <div class="feature-label">Kualitas</div>
+      <div class="feature-icon">🎬</div>
       <div class="feature-val">HD</div>
+      <div class="feature-label">Kualitas video</div>
     </div>
     <div class="feature">
-      <div class="feature-label">Watermark</div>
-      <div class="feature-val">Tidak Ada</div>
+      <div class="feature-icon">✨</div>
+      <div class="feature-val">Bersih</div>
+      <div class="feature-label">Tanpa watermark</div>
     </div>
     <div class="feature">
-      <div class="feature-label">Biaya</div>
+      <div class="feature-icon">🆓</div>
       <div class="feature-val">Gratis</div>
+      <div class="feature-label">Selamanya</div>
     </div>
   </div>
 
   <footer>
-    TikSave — Downloader TikTok Gratis &nbsp;·&nbsp;
-    Dibuat oleh <a href="https://faridsyam.web.app" target="_blank" rel="noopener">MFaridS</a>
+    TikSave &nbsp;·&nbsp; Dibuat oleh <a href="https://faridsyam.web.app" target="_blank" rel="noopener">MFaridS</a>
   </footer>
-
 </div>
+
 <script src="app.js"></script>
 </body>
 </html>

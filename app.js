@@ -8,6 +8,8 @@ const progressBar = document.getElementById('progressBar');
 let currentImages = [];
 let currentUsername = 'unknown';
 
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchVideo(); });
 urlInput.addEventListener('input', updatePasteBtn);
 
@@ -30,7 +32,6 @@ async function pasteURL() {
     urlInput.focus();
   } catch (e) {
     urlInput.focus();
-    updatePasteBtn();
   }
 }
 
@@ -41,10 +42,7 @@ function clearURL() {
   urlInput.focus();
 }
 
-function showProgress() {
-  progressBar.className = 'progress-bar loading';
-}
-
+function showProgress() { progressBar.className = 'progress-bar loading'; }
 function hideProgress() {
   progressBar.className = 'progress-bar done';
   setTimeout(() => { progressBar.className = 'progress-bar'; }, 700);
@@ -69,62 +67,7 @@ function resetUI() {
   currentImages = [];
 }
 
-// ─── Check apakah video bisa diputar (codec compatible) ───
-async function isVideoPlayable(url) {
-  return new Promise((resolve) => {
-    const video = document.createElement('video');
-    video.muted = true;
-    video.preload = 'metadata';
-
-    const timeout = setTimeout(() => {
-      video.src = '';
-      resolve(true); // timeout = asumsikan bisa, coba download biasa
-    }, 5000);
-
-    video.onloadedmetadata = () => {
-      clearTimeout(timeout);
-      // Jika ada video track dengan lebar > 0, codec didukung
-      const hasVideo = video.videoWidth > 0;
-      video.src = '';
-      resolve(hasVideo);
-    };
-
-    video.onerror = () => {
-      clearTimeout(timeout);
-      video.src = '';
-      resolve(false); // codec tidak didukung
-    };
-
-    // Pakai proxy untuk cek
-    video.src = '/api/proxy?url=' + encodeURIComponent(url);
-  });
-}
-
-// ─── Download via proxy biasa ───
-async function downloadViaProxy(url, filename) {
-  const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
-  if (!response.ok) throw new Error('Proxy fetch failed');
-  const blob = await response.blob();
-  triggerDownload(blob, filename);
-}
-
-// ─── Download via convert (FFmpeg re-encode) ───
-async function downloadViaConvert(url, filename, btn) {
-  // Update label to show converting status
-  if (btn) btn.innerHTML = '<span class="spin"></span> Mengkonversi...';
-
-  const response = await fetch('/api/convert', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url })
-  });
-
-  if (!response.ok) throw new Error('Convert failed');
-  const blob = await response.blob();
-  triggerDownload(blob, filename);
-}
-
-function triggerDownload(blob, filename) {
+function saveBlobAsFile(blob, filename) {
   const blobUrl = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = blobUrl;
@@ -132,14 +75,47 @@ function triggerDownload(blob, filename) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 8000);
 }
 
-// ─── Main download handler dengan fallback ke convert ───
-async function downloadFile(btn) {
+async function downloadVideo(btn) {
   const url = btn.dataset.url;
-  const filename = btn.dataset.filename || 'tiksave_download';
-  const isVideo = filename.endsWith('.mp4');
+  const filename = btn.dataset.filename || 'tiksave_video.mp4';
+  if (!url) return;
+
+  const origText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Memproses...';
+  showProgress();
+
+  try {
+    if (isIOS) {
+      const convertUrl = '/api/convert-stream?url=' + encodeURIComponent(url);
+      window.open(convertUrl, '_blank');
+      document.getElementById('iosHint').classList.add('active');
+    } else {
+      const response = await fetch('/api/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      if (!response.ok) throw new Error('Gagal mengkonversi video.');
+      const blob = await response.blob();
+      saveBlobAsFile(blob, filename);
+    }
+  } catch (e) {
+    window.open('/api/convert-stream?url=' + encodeURIComponent(url), '_blank');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origText;
+    hideProgress();
+  }
+}
+
+async function downloadAudio(btn) {
+  const url = btn.dataset.url;
+  const filename = btn.dataset.filename || 'tiksave_audio.mp3';
   if (!url) return;
 
   const origText = btn.innerHTML;
@@ -148,25 +124,16 @@ async function downloadFile(btn) {
   showProgress();
 
   try {
-    if (isVideo) {
-      // Cek dulu apakah codec compatible
-      const playable = await isVideoPlayable(url);
-
-      if (!playable) {
-        // BVC2 atau codec tidak dikenal → convert dulu
-        await downloadViaConvert(url, filename, btn);
-      } else {
-        // Codec normal (H.264) → download langsung
-        await downloadViaProxy(url, filename);
-      }
+    if (isIOS) {
+      window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
     } else {
-      // Audio/music → langsung proxy
-      await downloadViaProxy(url, filename);
+      const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
+      if (!response.ok) throw new Error('Gagal mengunduh audio.');
+      const blob = await response.blob();
+      saveBlobAsFile(blob, filename);
     }
   } catch (e) {
-    console.error('Download error:', e);
-    // Last resort: buka di tab baru
-    window.open(url, '_blank');
+    window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
   } finally {
     btn.disabled = false;
     btn.innerHTML = origText;
@@ -177,11 +144,15 @@ async function downloadFile(btn) {
 async function downloadSingleImage(url, index) {
   showProgress();
   try {
-    const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
-    const blob = await response.blob();
-    triggerDownload(blob, `${currentUsername}_image${index + 1}.jpg`);
+    if (isIOS) {
+      window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
+    } else {
+      const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
+      const blob = await response.blob();
+      saveBlobAsFile(blob, `${currentUsername}_image${index + 1}.jpg`);
+    }
   } catch (e) {
-    window.open(url, '_blank');
+    window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
   } finally {
     hideProgress();
   }
@@ -203,17 +174,16 @@ async function downloadAllImages() {
     });
 
     if (!response.ok) throw new Error('Gagal membuat ZIP');
-
     const blob = await response.blob();
-    triggerDownload(blob, `${currentUsername}_images.zip`);
+    saveBlobAsFile(blob, `${currentUsername}_images.zip`);
   } catch (e) {
     for (let i = 0; i < currentImages.length; i++) {
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 500));
       try {
         const r = await fetch('/api/proxy?url=' + encodeURIComponent(currentImages[i]));
         const bl = await r.blob();
-        triggerDownload(bl, `${currentUsername}_image${i + 1}.jpg`);
-      } catch (err) {
+        saveBlobAsFile(bl, `${currentUsername}_image${i + 1}.jpg`);
+      } catch {
         window.open(currentImages[i], '_blank');
       }
     }
@@ -234,7 +204,7 @@ function renderImages(images) {
     item.className = 'img-item';
     item.innerHTML = `
       <img src="${imgUrl}" alt="Foto ${i + 1}" loading="lazy" onerror="this.style.display='none'"/>
-      <button class="img-dl-btn" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>Unduh</span></button>
+      <button class="img-overlay" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>Unduh</span></button>
     `;
     grid.appendChild(item);
   });
@@ -288,10 +258,14 @@ async function fetchVideo() {
     if (v.music) {
       dlMusic.dataset.url = v.music;
       dlMusic.dataset.filename = `${currentUsername}_audio_${ts}.mp3`;
-      dlMusic.textContent = v.musicTitle ? v.musicTitle.substring(0, 28) : 'Audio';
+      dlMusic.textContent = v.musicTitle ? v.musicTitle.substring(0, 26) : 'Audio';
       dlMusic.style.display = 'flex';
     } else {
       dlMusic.style.display = 'none';
+    }
+
+    if (isIOS) {
+      document.getElementById('iosHint').classList.add('active');
     }
 
     renderImages(v.images || []);
