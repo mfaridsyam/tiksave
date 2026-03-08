@@ -362,7 +362,6 @@ h1 span {
   color: var(--text);
 }
 
-/* iOS hint box */
 .ios-hint {
   display: none;
   margin: 0 16px 12px;

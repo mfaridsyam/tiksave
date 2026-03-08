@@ -28,8 +28,6 @@ export default async function handler(req, res) {
 }
 
 async function fetchTikwm(url) {
-  // Coba play dulu (H.264, kompatibel semua device)
-  // hdplay kadang BVC2 yang tidak bisa diputar di browser/VLC
   const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`;
   const response = await fetch(apiUrl, {
     headers: {
@@ -53,7 +51,6 @@ async function fetchTikwm(url) {
     });
   }
 
-  // Prioritas: play (H.264 standar) → hdplay (HD tapi mungkin BVC2)
   const downloadUrl = v.play || v.hdplay || '';
 
   return {
