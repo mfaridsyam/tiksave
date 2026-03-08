@@ -1,10 +1,9 @@
 const urlInput = document.getElementById('urlInput');
-const pasteBtn = document.getElementById('pasteBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const loader = document.getElementById('loader');
 const errorBox = document.getElementById('errorBox');
 const resultCard = document.getElementById('resultCard');
-const dlStatus = document.getElementById('dlStatus');
+const progressBar = document.getElementById('progressBar');
 
 let currentImages = [];
 let currentUsername = 'unknown';
@@ -13,12 +12,13 @@ urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchVideo();
 urlInput.addEventListener('input', updatePasteBtn);
 
 function updatePasteBtn() {
+  const btn = document.getElementById('pasteBtn');
   if (urlInput.value.trim()) {
-    pasteBtn.textContent = '✕ Hapus';
-    pasteBtn.onclick = clearURL;
+    btn.textContent = 'Hapus';
+    btn.onclick = clearURL;
   } else {
-    pasteBtn.textContent = '📋 Tempel';
-    pasteBtn.onclick = pasteURL;
+    btn.textContent = 'Tempel';
+    btn.onclick = pasteURL;
   }
 }
 
@@ -41,6 +41,15 @@ function clearURL() {
   urlInput.focus();
 }
 
+function showProgress() {
+  progressBar.className = 'progress-bar loading';
+}
+
+function hideProgress() {
+  progressBar.className = 'progress-bar done';
+  setTimeout(() => { progressBar.className = 'progress-bar'; }, 700);
+}
+
 function formatNum(n) {
   if (!n) return '0';
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
@@ -55,16 +64,9 @@ function formatDuration(s) {
 
 function resetUI() {
   errorBox.classList.remove('active');
-  errorBox.style.display = 'none';
   resultCard.classList.remove('active');
   loader.classList.remove('active');
   currentImages = [];
-}
-
-function showStatus(msg, duration = 3000) {
-  dlStatus.textContent = msg;
-  dlStatus.classList.add('show');
-  setTimeout(() => dlStatus.classList.remove('show'), duration);
 }
 
 async function downloadFile(btn) {
@@ -72,10 +74,10 @@ async function downloadFile(btn) {
   const filename = btn.dataset.filename || 'tiksave_download';
   if (!url) return;
 
-  const origHTML = btn.innerHTML;
+  const origText = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Mengunduh...';
-  showStatus('⬇ Mengunduh file...', 8000);
+  btn.innerHTML = '<span class="spin"></span>';
+  showProgress();
 
   try {
     const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
@@ -89,32 +91,32 @@ async function downloadFile(btn) {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-    showStatus('✅ Download berhasil!', 3000);
   } catch (e) {
     window.open(url, '_blank');
-    showStatus('✅ File siap didownload', 3000);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = origHTML;
+    btn.innerHTML = origText;
+    hideProgress();
   }
 }
 
 async function downloadSingleImage(url, index) {
-  showStatus(`⬇ Mengunduh gambar ${index + 1}...`, 5000);
+  showProgress();
   try {
     const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
     const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = `${currentUsername}_image${index + 1}_${Date.now()}.jpg`;
+    a.download = `${currentUsername}_image${index + 1}.jpg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-    showStatus('✅ Gambar berhasil diunduh!', 3000);
   } catch (e) {
     window.open(url, '_blank');
+  } finally {
+    hideProgress();
   }
 }
 
@@ -123,8 +125,8 @@ async function downloadAllImages() {
 
   const btn = document.querySelector('.btn-dl-all');
   const origText = btn ? btn.textContent : '';
-  if (btn) { btn.textContent = '⏳ Menyiapkan...'; btn.disabled = true; }
-  showStatus(`⏳ Menyiapkan ${currentImages.length} gambar dalam ZIP...`, 20000);
+  if (btn) { btn.textContent = 'Menyiapkan...'; btn.disabled = true; }
+  showProgress();
 
   try {
     const response = await fetch('/api/zip', {
@@ -144,24 +146,27 @@ async function downloadAllImages() {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-    showStatus(`✅ ZIP berhasil diunduh! (${currentImages.length} gambar)`, 4000);
   } catch (e) {
-    showStatus(`⬇ Mengunduh ${currentImages.length} gambar satu per satu...`, 20000);
     for (let i = 0; i < currentImages.length; i++) {
-      await new Promise(r => setTimeout(r, 700));
+      await new Promise(r => setTimeout(r, 600));
       try {
         const r = await fetch('/api/proxy?url=' + encodeURIComponent(currentImages[i]));
         const bl = await r.blob();
         const bu = URL.createObjectURL(bl);
         const a = document.createElement('a');
-        a.href = bu; a.download = `${currentUsername}_image${i+1}.jpg`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        a.href = bu;
+        a.download = `${currentUsername}_image${i + 1}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(bu), 5000);
-      } catch (err) { window.open(currentImages[i], '_blank'); }
+      } catch (err) {
+        window.open(currentImages[i], '_blank');
+      }
     }
-    showStatus(`✅ Selesai!`, 3000);
   } finally {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
+    hideProgress();
   }
 }
 
@@ -175,8 +180,8 @@ function renderImages(images) {
     const item = document.createElement('div');
     item.className = 'img-item';
     item.innerHTML = `
-      <img src="${imgUrl}" alt="Gambar ${i + 1}" loading="lazy" onerror="this.style.display='none'"/>
-      <button class="img-dl-btn" onclick="downloadSingleImage('${imgUrl}', ${i})">⬇ Unduh</button>
+      <img src="${imgUrl}" alt="Foto ${i + 1}" loading="lazy" onerror="this.style.display='none'"/>
+      <button class="img-dl-btn" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>Unduh</span></button>
     `;
     grid.appendChild(item);
   });
@@ -189,9 +194,9 @@ async function fetchVideo() {
 
   resetUI();
   downloadBtn.disabled = true;
-  document.getElementById('btnIcon').innerHTML = '<span class="spin"></span>';
-  document.getElementById('btnText').textContent = 'Memproses...';
+  document.getElementById('btnText').innerHTML = '<span class="spin"></span>';
   loader.classList.add('active');
+  showProgress();
 
   try {
     const res = await fetch('/api/download', {
@@ -204,25 +209,23 @@ async function fetchVideo() {
     if (!res.ok || !data.success) throw new Error(data.error || 'Gagal mengambil video.');
 
     const v = data.video;
+    currentUsername = v.authorUsername || 'unknown';
+    const ts = Date.now();
 
     document.getElementById('resCover').src = v.cover || '';
     document.getElementById('resAvatar').src = v.avatar || '';
-    document.getElementById('resAuthor').textContent = v.author || 'Unknown';
+    document.getElementById('resAuthor').textContent = v.author || '';
     document.getElementById('resHandle').textContent = v.authorUsername ? `@${v.authorUsername}` : '';
-    document.getElementById('resTitle').textContent = v.title || 'Video TikTok';
+    document.getElementById('resTitle').textContent = v.title || '';
     document.getElementById('resDuration').textContent = formatDuration(v.duration);
-    document.getElementById('resPlays').textContent = formatNum(v.plays);
-    document.getElementById('resLikes').textContent = formatNum(v.likes);
-    document.getElementById('resComments').textContent = formatNum(v.comments);
-
-    const username = v.authorUsername || 'unknown';
-    currentUsername = username;
-    const timestamp = Date.now();
+    document.getElementById('resPlays').textContent = formatNum(v.plays) + ' tayang';
+    document.getElementById('resLikes').textContent = formatNum(v.likes) + ' suka';
+    document.getElementById('resComments').textContent = formatNum(v.comments) + ' komentar';
 
     const dlVideo = document.getElementById('dlVideoBtn');
     if (v.downloadUrl) {
       dlVideo.dataset.url = v.downloadUrl;
-      dlVideo.dataset.filename = `${username}_${timestamp}.mp4`;
+      dlVideo.dataset.filename = `${currentUsername}_${ts}.mp4`;
       dlVideo.style.display = 'flex';
     } else {
       dlVideo.style.display = 'none';
@@ -231,25 +234,23 @@ async function fetchVideo() {
     const dlMusic = document.getElementById('dlMusicBtn');
     if (v.music) {
       dlMusic.dataset.url = v.music;
-      dlMusic.dataset.filename = `${username}_audio_${timestamp}.mp3`;
-      dlMusic.innerHTML = `🎵 ${v.musicTitle ? v.musicTitle.substring(0, 22) + '...' : 'Download Audio'}`;
+      dlMusic.dataset.filename = `${currentUsername}_audio_${ts}.mp3`;
+      dlMusic.textContent = v.musicTitle ? v.musicTitle.substring(0, 28) : 'Audio';
       dlMusic.style.display = 'flex';
     } else {
       dlMusic.style.display = 'none';
     }
 
     renderImages(v.images || []);
-
     resultCard.classList.add('active');
 
   } catch (err) {
     errorBox.classList.add('active');
-    errorBox.style.display = 'flex';
     document.getElementById('errorText').textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
   } finally {
     downloadBtn.disabled = false;
-    document.getElementById('btnIcon').textContent = '⬇';
-    document.getElementById('btnText').textContent = 'Download';
+    document.getElementById('btnText').textContent = 'Unduh';
     loader.classList.remove('active');
+    hideProgress();
   }
 }

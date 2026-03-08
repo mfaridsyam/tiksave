@@ -5,24 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>TikSave — Download TikTok Tanpa Watermark</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<div class="progress-bar" id="progressBar"></div>
+
 <div class="container">
   <nav>
-    <div class="logo">
-      <div class="logo-dot"></div>
-      TikSave
-    </div>
-    <span class="badge">GRATIS • NO WATERMARK</span>
+    <div class="logo">TikSave</div>
+    <span class="nav-tag">No Watermark</span>
   </nav>
 
   <div class="hero">
-    <div class="hero-tag"><span>●</span> Downloader TikTok #1</div>
     <h1>Download TikTok<br><em>Tanpa Watermark</em></h1>
-    <p class="hero-sub">Tempel link video TikTok di bawah ini dan download langsung dalam kualitas HD — tanpa watermark, gratis selamanya.</p>
+    <p class="hero-sub">Tempel link, klik unduh. Gratis selamanya.</p>
 
     <div class="input-card">
       <div class="input-row">
@@ -30,27 +28,23 @@
           type="text"
           id="urlInput"
           class="url-input"
-          placeholder="Tempel link TikTok di sini..."
+          placeholder="https://www.tiktok.com/@username/video/..."
           autocomplete="off"
           spellcheck="false"
         />
-        <button class="btn-icon-action" id="pasteBtn" onclick="pasteURL()">📋 Tempel</button>
-        <button class="btn-download" id="downloadBtn" onclick="fetchVideo()">
-          <span id="btnIcon">⬇</span>
-          <span id="btnText">Download</span>
+        <button class="btn-paste" id="pasteBtn" onclick="pasteURL()">Tempel</button>
+        <button class="btn-main" id="downloadBtn" onclick="fetchVideo()">
+          <span id="btnText">Unduh</span>
         </button>
       </div>
-      <div class="input-hint">💡 Contoh: https://www.tiktok.com/@username/video/1234567890</div>
     </div>
 
     <div class="loader" id="loader">
-      <div class="loader-bar"><div class="loader-bar-fill"></div></div>
-      <div class="loader-text">Mengambil info video, mohon tunggu...</div>
+      <div class="loader-track"><div class="loader-fill"></div></div>
     </div>
 
     <div class="error-box" id="errorBox">
-      <span>⚠️</span>
-      <span id="errorText">Terjadi kesalahan.</span>
+      <span id="errorText"></span>
     </div>
 
     <div class="result-card" id="resultCard">
@@ -64,15 +58,15 @@
             <div class="result-author">
               <img id="resAvatar" class="author-avatar" src="" alt="Avatar"/>
               <div>
-                <div class="author-name" id="resAuthor">—</div>
-                <div class="author-handle" id="resHandle">—</div>
+                <div class="author-name" id="resAuthor"></div>
+                <div class="author-handle" id="resHandle"></div>
               </div>
             </div>
-            <div class="result-title" id="resTitle">—</div>
+            <div class="result-title" id="resTitle"></div>
             <div class="result-stats">
-              <div class="stat"><span>▶</span><span id="resPlays">—</span></div>
-              <div class="stat"><span>♥</span><span id="resLikes">—</span></div>
-              <div class="stat"><span>💬</span><span id="resComments">—</span></div>
+              <div class="stat"><span id="resPlays"></span></div>
+              <div class="stat"><span id="resLikes"></span></div>
+              <div class="stat"><span id="resComments"></span></div>
             </div>
           </div>
         </div>
@@ -82,17 +76,17 @@
 
       <div class="download-actions" id="downloadActions">
         <button class="btn-dl btn-dl-primary" id="dlVideoBtn" onclick="downloadFile(this)">
-          🎬 Download Video HD
+          Video HD
         </button>
         <button class="btn-dl btn-dl-secondary" id="dlMusicBtn" onclick="downloadFile(this)" style="display:none">
-          🎵 Download Audio
+          Audio
         </button>
       </div>
 
       <div class="images-section" id="imagesSection" style="display:none">
         <div class="images-title">
-          <span>🖼️ Gambar dalam postingan</span>
-          <button class="btn-dl-all" onclick="downloadAllImages()">⬇ Download Semua</button>
+          <span>Foto dalam postingan</span>
+          <button class="btn-dl-all" onclick="downloadAllImages()">Unduh Semua</button>
         </div>
         <div class="images-grid" id="imagesGrid"></div>
       </div>
@@ -101,30 +95,24 @@
 
   <div class="features">
     <div class="feature">
-      <span class="feature-icon">🚫</span>
-      <h3>Tanpa Watermark</h3>
-      <p>Video bersih tanpa logo TikTok, siap untuk diedit atau diposting ulang.</p>
+      <div class="feature-label">Kualitas</div>
+      <div class="feature-val">HD</div>
     </div>
     <div class="feature">
-      <span class="feature-icon">⚡</span>
-      <h3>Cepat & Mudah</h3>
-      <p>Cukup tempel link, klik download. Tidak perlu daftar atau install apapun.</p>
+      <div class="feature-label">Watermark</div>
+      <div class="feature-val">Tidak Ada</div>
     </div>
     <div class="feature">
-      <span class="feature-icon">🆓</span>
-      <h3>100% Gratis</h3>
-      <p>Tidak ada biaya tersembunyi. Gunakan sesering mungkin tanpa batas.</p>
+      <div class="feature-label">Biaya</div>
+      <div class="feature-val">Gratis</div>
     </div>
   </div>
 
   <footer>
-    <strong>TikSave</strong> — Downloader TikTok Gratis<br>
-    Dibuat dengan ❤️ · Hanya untuk penggunaan pribadi<br>
-    <small style="opacity:0.5">Selalu hormati hak cipta kreator konten</small>
+    TikSave — Downloader TikTok Gratis &nbsp;·&nbsp;
+    Dibuat oleh <a href="https://faridsyam.web.app" target="_blank" rel="noopener">MFaridS</a>
   </footer>
 </div>
-
-<div class="dl-status" id="dlStatus">⬇ Mengunduh file...</div>
 
 <script src="app.js"></script>
 </body>
