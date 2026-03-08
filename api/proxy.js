@@ -3,7 +3,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { url } = req.query;
+  const { url, filename } = req.query;
   if (!url) return res.status(400).json({ error: 'URL is required' });
 
   const allowed = ['tiktokcdn', 'tiktokcdn-us', 'tiktok.com', 'tikwm.com', 'muscdn.com'];
@@ -24,9 +24,10 @@ export default async function handler(req, res) {
 
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     const contentLength = response.headers.get('content-length');
+    const safeFilename = (filename || 'tiksave_video.mp4').replace(/[^a-zA-Z0-9._-]/g, '_');
 
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', 'attachment');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
     if (contentLength) res.setHeader('Content-Length', contentLength);
 
     const buffer = await response.arrayBuffer();

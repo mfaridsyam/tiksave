@@ -7,8 +7,6 @@ const progressBar = document.getElementById('progressBar');
 let currentImages = [];
 let currentUsername = 'unknown';
 
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchVideo(); });
 urlInput.addEventListener('input', updatePasteBtn);
 
@@ -76,6 +74,10 @@ function saveBlobAsFile(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(blobUrl), 8000);
 }
 
+function proxyUrl(url, filename) {
+  return '/api/proxy?url=' + encodeURIComponent(url) + '&filename=' + encodeURIComponent(filename);
+}
+
 async function downloadVideo(btn) {
   const url = btn.dataset.url;
   const filename = btn.dataset.filename || 'tiksave_video.mp4';
@@ -87,17 +89,12 @@ async function downloadVideo(btn) {
   showProgress();
 
   try {
-    if (isIOS) {
-      window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
-      document.getElementById('iosHint').classList.add('active');
-    } else {
-      const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
-      if (!response.ok) throw new Error('Gagal mengunduh video.');
-      const blob = await response.blob();
-      saveBlobAsFile(blob, filename);
-    }
+    const response = await fetch(proxyUrl(url, filename));
+    if (!response.ok) throw new Error('Gagal mengunduh video.');
+    const blob = await response.blob();
+    saveBlobAsFile(blob, filename);
   } catch (e) {
-    window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
+    window.open(proxyUrl(url, filename), '_blank');
   } finally {
     btn.disabled = false;
     btn.innerHTML = origText;
@@ -116,16 +113,12 @@ async function downloadAudio(btn) {
   showProgress();
 
   try {
-    if (isIOS) {
-      window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
-    } else {
-      const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
-      if (!response.ok) throw new Error('Gagal mengunduh audio.');
-      const blob = await response.blob();
-      saveBlobAsFile(blob, filename);
-    }
+    const response = await fetch(proxyUrl(url, filename));
+    if (!response.ok) throw new Error('Gagal mengunduh audio.');
+    const blob = await response.blob();
+    saveBlobAsFile(blob, filename);
   } catch (e) {
-    window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
+    window.open(proxyUrl(url, filename), '_blank');
   } finally {
     btn.disabled = false;
     btn.innerHTML = origText;
@@ -134,17 +127,14 @@ async function downloadAudio(btn) {
 }
 
 async function downloadSingleImage(url, index) {
+  const filename = `${currentUsername}_image${index + 1}.jpg`;
   showProgress();
   try {
-    if (isIOS) {
-      window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
-    } else {
-      const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
-      const blob = await response.blob();
-      saveBlobAsFile(blob, `${currentUsername}_image${index + 1}.jpg`);
-    }
+    const response = await fetch(proxyUrl(url, filename));
+    const blob = await response.blob();
+    saveBlobAsFile(blob, filename);
   } catch (e) {
-    window.open('/api/proxy?url=' + encodeURIComponent(url), '_blank');
+    window.open(proxyUrl(url, filename), '_blank');
   } finally {
     hideProgress();
   }
@@ -171,9 +161,10 @@ async function downloadAllImages() {
     for (let i = 0; i < currentImages.length; i++) {
       await new Promise(r => setTimeout(r, 500));
       try {
-        const r = await fetch('/api/proxy?url=' + encodeURIComponent(currentImages[i]));
+        const filename = `${currentUsername}_image${i + 1}.jpg`;
+        const r = await fetch(proxyUrl(currentImages[i], filename));
         const bl = await r.blob();
-        saveBlobAsFile(bl, `${currentUsername}_image${i + 1}.jpg`);
+        saveBlobAsFile(bl, filename);
       } catch {
         window.open(currentImages[i], '_blank');
       }
@@ -253,8 +244,6 @@ async function fetchVideo() {
     } else {
       dlMusic.style.display = 'none';
     }
-
-    if (isIOS) document.getElementById('iosHint').classList.add('active');
 
     renderImages(v.images || []);
     resultCard.classList.add('active');
