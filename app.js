@@ -7,6 +7,7 @@ const resultCard = document.getElementById('resultCard');
 const dlStatus = document.getElementById('dlStatus');
 
 let currentImages = [];
+let currentUsername = 'unknown';
 
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchVideo(); });
 urlInput.addEventListener('input', updatePasteBtn);
@@ -106,7 +107,7 @@ async function downloadSingleImage(url, index) {
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = `tiksave_image_${index + 1}.jpg`;
+    a.download = `${currentUsername}_image${index + 1}_${Date.now()}.jpg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -128,7 +129,7 @@ async function downloadAllImages() {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = `tiksave_image_${i + 1}.jpg`;
+      a.download = `${currentUsername}_image${i + 1}_${Date.now()}.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -190,10 +191,14 @@ async function fetchVideo() {
     document.getElementById('resLikes').textContent = formatNum(v.likes);
     document.getElementById('resComments').textContent = formatNum(v.comments);
 
+    const username = v.authorUsername || 'unknown';
+    currentUsername = username;
+    const timestamp = Date.now();
+
     const dlVideo = document.getElementById('dlVideoBtn');
     if (v.downloadUrl) {
       dlVideo.dataset.url = v.downloadUrl;
-      dlVideo.dataset.filename = `tiksave_${Date.now()}.mp4`;
+      dlVideo.dataset.filename = `${username}_${timestamp}.mp4`;
       dlVideo.style.display = 'flex';
     } else {
       dlVideo.style.display = 'none';
@@ -202,7 +207,7 @@ async function fetchVideo() {
     const dlMusic = document.getElementById('dlMusicBtn');
     if (v.music) {
       dlMusic.dataset.url = v.music;
-      dlMusic.dataset.filename = `tiksave_audio_${Date.now()}.mp3`;
+      dlMusic.dataset.filename = `${username}_audio_${timestamp}.mp3`;
       dlMusic.innerHTML = `🎵 ${v.musicTitle ? v.musicTitle.substring(0, 22) + '...' : 'Download Audio'}`;
       dlMusic.style.display = 'flex';
     } else {
