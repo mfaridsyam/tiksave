@@ -15,16 +15,65 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await fetchSSSTik(url);
+    const result = await fetchTikwm(url);
     return res.status(200).json(result);
   } catch (e1) {
     try {
-      const result = await fetchTikwm(url);
+      const result = await fetchSSSTik(url);
       return res.status(200).json(result);
     } catch (e2) {
       return res.status(500).json({ error: 'Gagal mengambil video. Coba lagi.' });
     }
   }
+}
+
+async function fetchTikwm(url) {
+  // Coba play dulu (H.264, kompatibel semua device)
+  // hdplay kadang BVC2 yang tidak bisa diputar di browser/VLC
+  const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`;
+  const response = await fetch(apiUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Referer': 'https://www.tikwm.com/',
+    }
+  });
+
+  const data = await response.json();
+  if (data.code !== 0 || !data.data) throw new Error('Tikwm failed');
+
+  const v = data.data;
+
+  let images = [];
+  if (v.images && v.images.length > 0) {
+    images = v.images;
+  } else if (v.image_post_info?.images) {
+    images = v.image_post_info.images.map(img => {
+      const urlList = img.display_image?.url_list || [];
+      return urlList[0] || '';
+    });
+  }
+
+  // Prioritas: play (H.264 standar) → hdplay (HD tapi mungkin BVC2)
+  const downloadUrl = v.play || v.hdplay || '';
+
+  return {
+    success: true,
+    video: {
+      title: v.title || 'TikTok Video',
+      author: v.author?.nickname || 'Unknown',
+      authorUsername: v.author?.unique_id || '',
+      avatar: v.author?.avatar || '',
+      cover: v.origin_cover || v.cover || '',
+      duration: v.duration || 0,
+      plays: v.play_count || 0,
+      likes: v.digg_count || 0,
+      comments: v.comment_count || 0,
+      downloadUrl,
+      music: v.music_info?.play || null,
+      musicTitle: v.music_info?.title || '',
+      images: images.filter(Boolean),
+    }
+  };
 }
 
 async function fetchSSSTik(url) {
@@ -77,50 +126,6 @@ async function fetchSSSTik(url) {
       music: musicMatch?.[1] || null,
       musicTitle: 'Audio',
       images: [],
-    }
-  };
-}
-
-async function fetchTikwm(url) {
-  const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`;
-  const response = await fetch(apiUrl, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Referer': 'https://www.tikwm.com/',
-    }
-  });
-
-  const data = await response.json();
-  if (data.code !== 0 || !data.data) throw new Error('Tikwm failed');
-
-  const v = data.data;
-
-  let images = [];
-  if (v.images && v.images.length > 0) {
-    images = v.images;
-  } else if (v.image_post_info?.images) {
-    images = v.image_post_info.images.map(img => {
-      const urlList = img.display_image?.url_list || [];
-      return urlList[0] || '';
-    });
-  }
-
-  return {
-    success: true,
-    video: {
-      title: v.title || 'TikTok Video',
-      author: v.author?.nickname || 'Unknown',
-      authorUsername: v.author?.unique_id || '',
-      avatar: v.author?.avatar || '',
-      cover: v.origin_cover || v.cover || '',
-      duration: v.duration || 0,
-      plays: v.play_count || 0,
-      likes: v.digg_count || 0,
-      comments: v.comment_count || 0,
-      downloadUrl: v.hdplay || v.play || '',
-      music: v.music_info?.play || null,
-      musicTitle: v.music_info?.title || '',
-      images: images.filter(Boolean),
     }
   };
 }
