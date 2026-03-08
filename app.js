@@ -69,9 +69,77 @@ function resetUI() {
   currentImages = [];
 }
 
+// ─── Check apakah video bisa diputar (codec compatible) ───
+async function isVideoPlayable(url) {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.muted = true;
+    video.preload = 'metadata';
+
+    const timeout = setTimeout(() => {
+      video.src = '';
+      resolve(true); // timeout = asumsikan bisa, coba download biasa
+    }, 5000);
+
+    video.onloadedmetadata = () => {
+      clearTimeout(timeout);
+      // Jika ada video track dengan lebar > 0, codec didukung
+      const hasVideo = video.videoWidth > 0;
+      video.src = '';
+      resolve(hasVideo);
+    };
+
+    video.onerror = () => {
+      clearTimeout(timeout);
+      video.src = '';
+      resolve(false); // codec tidak didukung
+    };
+
+    // Pakai proxy untuk cek
+    video.src = '/api/proxy?url=' + encodeURIComponent(url);
+  });
+}
+
+// ─── Download via proxy biasa ───
+async function downloadViaProxy(url, filename) {
+  const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
+  if (!response.ok) throw new Error('Proxy fetch failed');
+  const blob = await response.blob();
+  triggerDownload(blob, filename);
+}
+
+// ─── Download via convert (FFmpeg re-encode) ───
+async function downloadViaConvert(url, filename, btn) {
+  // Update label to show converting status
+  if (btn) btn.innerHTML = '<span class="spin"></span> Mengkonversi...';
+
+  const response = await fetch('/api/convert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url })
+  });
+
+  if (!response.ok) throw new Error('Convert failed');
+  const blob = await response.blob();
+  triggerDownload(blob, filename);
+}
+
+function triggerDownload(blob, filename) {
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+}
+
+// ─── Main download handler dengan fallback ke convert ───
 async function downloadFile(btn) {
   const url = btn.dataset.url;
   const filename = btn.dataset.filename || 'tiksave_download';
+  const isVideo = filename.endsWith('.mp4');
   if (!url) return;
 
   const origText = btn.innerHTML;
@@ -80,18 +148,24 @@ async function downloadFile(btn) {
   showProgress();
 
   try {
-    const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
-    if (!response.ok) throw new Error('Fetch failed');
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    if (isVideo) {
+      // Cek dulu apakah codec compatible
+      const playable = await isVideoPlayable(url);
+
+      if (!playable) {
+        // BVC2 atau codec tidak dikenal → convert dulu
+        await downloadViaConvert(url, filename, btn);
+      } else {
+        // Codec normal (H.264) → download langsung
+        await downloadViaProxy(url, filename);
+      }
+    } else {
+      // Audio/music → langsung proxy
+      await downloadViaProxy(url, filename);
+    }
   } catch (e) {
+    console.error('Download error:', e);
+    // Last resort: buka di tab baru
     window.open(url, '_blank');
   } finally {
     btn.disabled = false;
@@ -105,14 +179,7 @@ async function downloadSingleImage(url, index) {
   try {
     const response = await fetch('/api/proxy?url=' + encodeURIComponent(url));
     const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = `${currentUsername}_image${index + 1}.jpg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    triggerDownload(blob, `${currentUsername}_image${index + 1}.jpg`);
   } catch (e) {
     window.open(url, '_blank');
   } finally {
@@ -138,28 +205,14 @@ async function downloadAllImages() {
     if (!response.ok) throw new Error('Gagal membuat ZIP');
 
     const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = `${currentUsername}_images.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    triggerDownload(blob, `${currentUsername}_images.zip`);
   } catch (e) {
     for (let i = 0; i < currentImages.length; i++) {
       await new Promise(r => setTimeout(r, 600));
       try {
         const r = await fetch('/api/proxy?url=' + encodeURIComponent(currentImages[i]));
         const bl = await r.blob();
-        const bu = URL.createObjectURL(bl);
-        const a = document.createElement('a');
-        a.href = bu;
-        a.download = `${currentUsername}_image${i + 1}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(bu), 5000);
+        triggerDownload(bl, `${currentUsername}_image${i + 1}.jpg`);
       } catch (err) {
         window.open(currentImages[i], '_blank');
       }

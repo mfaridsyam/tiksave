@@ -66,7 +66,6 @@ body {
   padding: 0 28px;
 }
 
-/* ─── MASTHEAD ─── */
 nav {
   display: flex;
   align-items: center;
@@ -101,7 +100,6 @@ nav {
   border-radius: 20px;
 }
 
-/* ─── HERO ─── */
 .hero {
   padding: 56px 0 52px;
 }
@@ -152,7 +150,6 @@ h1 em {
   max-width: 340px;
 }
 
-/* ─── INPUT ─── */
 .input-card {
   background: var(--surface);
   border: 1.5px solid var(--ink);
@@ -237,7 +234,6 @@ h1 em {
 .btn-main:active { transform: translateY(0); }
 .btn-main:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-/* ─── LOADER ─── */
 .loader {
   display: none;
   margin-top: 20px;
@@ -265,7 +261,6 @@ h1 em {
   100% { width: 0%; margin-left: 100%; }
 }
 
-/* ─── ERROR ─── */
 .error-box {
   display: none;
   margin-top: 16px;
@@ -279,7 +274,6 @@ h1 em {
 
 .error-box.active { display: block; }
 
-/* ─── RESULT CARD ─── */
 .result-card {
   display: none;
   margin-top: 20px;
@@ -431,7 +425,6 @@ h1 em {
   background: var(--surface2);
 }
 
-/* ─── IMAGES ─── */
 .images-section { padding: 0 22px 22px; }
 
 .images-title {
@@ -520,7 +513,6 @@ h1 em {
 .img-item:hover .img-dl-btn { background: rgba(0,0,0,0.25); }
 .img-item:hover .img-dl-btn span { opacity: 1; }
 
-/* ─── FEATURES ─── */
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -557,7 +549,6 @@ h1 em {
   letter-spacing: -0.5px;
 }
 
-/* ─── FOOTER ─── */
 footer {
   text-align: center;
   padding: 28px 0 56px;
@@ -580,7 +571,6 @@ footer a:hover {
   border-color: var(--accent);
 }
 
-/* ─── SPINNER ─── */
 .spin {
   display: inline-block;
   width: 14px; height: 14px;
@@ -593,7 +583,6 @@ footer a:hover {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── DECORATIVE RULE ─── */
 .hero-rule {
   display: flex;
   align-items: center;
@@ -614,7 +603,6 @@ footer a:hover {
   flex-shrink: 0;
 }
 
-/* ─── RESPONSIVE ─── */
 @media (max-width: 560px) {
   .input-row { flex-wrap: wrap; }
   .url-input { width: 100%; }
