@@ -13,10 +13,10 @@ urlInput.addEventListener('input', updatePasteBtn);
 function updatePasteBtn() {
   const btn = document.getElementById('pasteBtn');
   if (urlInput.value.trim()) {
-    btn.textContent = 'Hapus';
+    btn.textContent = 'Clear';
     btn.onclick = clearURL;
   } else {
-    btn.textContent = 'Tempel';
+    btn.textContent = 'Paste';
     btn.onclick = pasteURL;
   }
 }
@@ -85,12 +85,12 @@ async function downloadVideo(btn) {
 
   const origText = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Mengunduh...';
+  btn.innerHTML = '<span class="spin"></span> Downloading...';
   showProgress();
 
   try {
     const response = await fetch(proxyUrl(url, filename));
-    if (!response.ok) throw new Error('Gagal mengunduh video.');
+    if (!response.ok) throw new Error('Failed to download video.');
     const blob = await response.blob();
     saveBlobAsFile(blob, filename);
   } catch (e) {
@@ -114,7 +114,7 @@ async function downloadAudio(btn) {
 
   try {
     const response = await fetch(proxyUrl(url, filename));
-    if (!response.ok) throw new Error('Gagal mengunduh audio.');
+    if (!response.ok) throw new Error('Failed to download audio.');
     const blob = await response.blob();
     saveBlobAsFile(blob, filename);
   } catch (e) {
@@ -145,7 +145,7 @@ async function downloadAllImages() {
 
   const btn = document.querySelector('.btn-dl-all');
   const origText = btn ? btn.textContent : '';
-  if (btn) { btn.textContent = 'Menyiapkan...'; btn.disabled = true; }
+  if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }
   showProgress();
 
   try {
@@ -154,7 +154,7 @@ async function downloadAllImages() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ images: currentImages, username: currentUsername })
     });
-    if (!response.ok) throw new Error('Gagal membuat ZIP');
+    if (!response.ok) throw new Error('Failed to create ZIP');
     const blob = await response.blob();
     saveBlobAsFile(blob, `${currentUsername}_images.zip`);
   } catch (e) {
@@ -170,7 +170,7 @@ async function downloadAllImages() {
       }
     }
   } finally {
-    if (btn) { btn.textContent = origText; btn.disabled = false; }
+    if (btn) { btn.textContent = orig; btn.disabled = false; }
     hideProgress();
   }
 }
@@ -186,7 +186,7 @@ function renderImages(images) {
     item.className = 'img-item';
     item.innerHTML = `
       <img src="${imgUrl}" alt="Foto ${i + 1}" loading="lazy" onerror="this.style.display='none'"/>
-      <button class="img-overlay" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>Unduh</span></button>
+      <button class="img-overlay" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>Save</span></button>
     `;
     grid.appendChild(item);
   });
@@ -210,7 +210,7 @@ async function fetchVideo() {
     });
 
     const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.error || 'Gagal mengambil video.');
+    if (!res.ok || !data.success) throw new Error(data.error || 'Failed to fetch video.');
 
     const v = data.video;
     currentUsername = v.authorUsername || 'unknown';
@@ -222,9 +222,9 @@ async function fetchVideo() {
     document.getElementById('resHandle').textContent = v.authorUsername ? `@${v.authorUsername}` : '';
     document.getElementById('resTitle').textContent = v.title || '';
     document.getElementById('resDuration').textContent = formatDuration(v.duration);
-    document.getElementById('resPlays').textContent = formatNum(v.plays) + ' tayang';
-    document.getElementById('resLikes').textContent = formatNum(v.likes) + ' suka';
-    document.getElementById('resComments').textContent = formatNum(v.comments) + ' komentar';
+    document.getElementById('resPlays').textContent = formatNum(v.plays) + ' plays';
+    document.getElementById('resLikes').textContent = formatNum(v.likes) + ' likes';
+    document.getElementById('resComments').textContent = formatNum(v.comments) + ' comments';
 
     const dlVideo = document.getElementById('dlVideoBtn');
     if (v.downloadUrl) {
@@ -250,10 +250,10 @@ async function fetchVideo() {
 
   } catch (err) {
     errorBox.classList.add('active');
-    document.getElementById('errorText').textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
+    document.getElementById('errorText').textContent = err.message || 'Something went wrong. Try again.';
   } finally {
     downloadBtn.disabled = false;
-    document.getElementById('btnText').textContent = 'Unduh';
+    document.getElementById('btnText').textContent = 'Download';
     hideProgress();
   }
 }

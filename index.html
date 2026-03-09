@@ -1,26 +1,25 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>TikSave — Download TikTok Tanpa Watermark</title>
+  <title>TikSave — TikTok Downloader</title>
+  <meta name="description" content="Download TikTok videos and photos without watermark. Free forever."/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="progress-bar" id="progressBar"></div>
-
 <div class="container">
   <nav>
     <div class="logo">TikSave<span class="logo-dot"></span></div>
-    <span class="nav-badge">Tanpa Watermark</span>
+    <span class="nav-badge">No Watermark</span>
   </nav>
 
   <div class="hero">
-    <h1>Download TikTok<br><span>tanpa watermark</span></h1>
-    <p class="hero-sub">Tempel link video TikTok, klik unduh.</p>
+    <h1>TikTok<br><span>Downloader</span></h1>
+    <p class="hero-sub">Paste a TikTok link and hit download. Free forever.</p>
 
     <div class="input-wrap">
       <div class="input-row">
@@ -33,9 +32,9 @@
           spellcheck="false"
         />
         <div class="input-buttons">
-          <button class="btn-secondary" id="pasteBtn" onclick="pasteURL()">Tempel</button>
+          <button class="btn-secondary" id="pasteBtn" onclick="pasteURL()">Paste</button>
           <button class="btn-primary" id="downloadBtn" onclick="fetchVideo()">
-            <span id="btnText">Unduh</span>
+            <span id="btnText">Download</span>
           </button>
         </div>
       </div>
@@ -74,7 +73,7 @@
 
       <div class="dl-actions">
         <button class="btn-dl btn-dl-video" id="dlVideoBtn" onclick="downloadVideo(this)">
-          Unduh Video
+          Download Video
         </button>
         <button class="btn-dl btn-dl-audio" id="dlMusicBtn" onclick="downloadAudio(this)" style="display:none">
           Audio
@@ -83,34 +82,33 @@
 
       <div class="images-section" id="imagesSection" style="display:none">
         <div class="images-header">
-          <span class="images-label">Foto dalam postingan</span>
-          <button class="btn-dl-all" onclick="downloadAllImages()">Unduh Semua</button>
+          <span class="images-label">Photos in post</span>
+          <button class="btn-dl-all" onclick="downloadAllImages()">Download All</button>
         </div>
         <div class="images-grid" id="imagesGrid"></div>
       </div>
     </div>
   </div>
 
-  <div class="features">
-    <div class="feature">
-      <div class="feature-icon">🎬</div>
-      <div class="feature-val">HD</div>
-      <div class="feature-label">Kualitas video</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">✨</div>
-      <div class="feature-val">Bersih</div>
-      <div class="feature-label">Tanpa watermark</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🆓</div>
-      <div class="feature-val">Gratis</div>
-      <div class="feature-label">Selamanya</div>
+  <div class="howto-section">
+    <div class="howto-cards">
+      <div class="howto-card">
+        <div class="howto-card-title">Videos & Reels</div>
+        <div class="howto-card-desc">Paste any TikTok video link and download in full HD quality without watermark.</div>
+      </div>
+      <div class="howto-card">
+        <div class="howto-card-title">Photo Posts</div>
+        <div class="howto-card-desc">Download all slides from a TikTok photo post at once with the "Download All" button.</div>
+      </div>
+      <div class="howto-card">
+        <div class="howto-card-title">Audio Extract</div>
+        <div class="howto-card-desc">Extract and download the audio track from any TikTok video as an MP3 file.</div>
+      </div>
     </div>
   </div>
 
   <footer>
-    TikSave &nbsp;·&nbsp; Dibuat oleh <a href="https://faridsyam.web.app" target="_blank" rel="noopener">MFaridS</a>
+    TikSave &nbsp;·&nbsp; Built by <a href="https://faridsyam.web.app" target="_blank" rel="noopener">MFaridS</a>
   </footer>
 </div>
 

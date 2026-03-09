@@ -516,3 +516,46 @@ footer a:hover { color: var(--text); }
   .dl-actions { flex-direction: column; }
   .btn-dl { min-width: unset; }
 }
+
+.btn-secondary {
+  border-radius: 0 0 0 calc(var(--radius) - 4px);
+}
+.btn-primary {
+  border-radius: 0 0 calc(var(--radius) - 4px) 0;
+}
+
+.howto-section {
+  margin: 44px 0;
+  padding-top: 36px;
+  border-top: 1px solid var(--border);
+}
+
+.howto-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.howto-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 13px;
+}
+
+.howto-card-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+
+.howto-card-desc {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 520px) {
+  .howto-cards { grid-template-columns: 1fr; }
+}
