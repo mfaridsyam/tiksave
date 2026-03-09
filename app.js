@@ -144,7 +144,7 @@ async function downloadAllImages() {
   if (!currentImages.length) return;
 
   const btn = document.querySelector('.btn-dl-all');
-  const origText = btn ? btn.textContent : '';
+  const orig = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }
   showProgress();
 
@@ -256,4 +256,10 @@ async function fetchVideo() {
     document.getElementById('btnText').textContent = 'Download';
     hideProgress();
   }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
