@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>TikSave Debug</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
+    input { width: 70%; padding: 8px; font-size: 14px; background: #222; color: #fff; border: 1px solid #444; border-radius: 6px; }
+    button { padding: 8px 16px; background: #2d6a4f; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-left: 8px; }
+    pre { background: #1a1a1a; padding: 16px; border-radius: 8px; overflow: auto; font-size: 12px; max-height: 80vh; white-space: pre-wrap; word-break: break-all; }
+    .label { color: #aaa; font-size: 12px; margin: 12px 0 4px; }
+    .highlight { color: #4ade80; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2 style="color:#2d6a4f">TikSave — Raw API Debug</h2>
+  <div>
+    <input type="text" id="urlInput" placeholder="Paste TikTok URL here..." />
+    <button onclick="doDebug()">Inspect</button>
+  </div>
+  <div class="label">Status: <span id="status">—</span></div>
+
+  <div class="label">📸 image_post_info.images (first item — full structure):</div>
+  <pre id="outImagePost">—</pre>
+
+  <div class="label">🎞 v.images (simple array):</div>
+  <pre id="outImages">—</pre>
+
+  <div class="label">🔑 All top-level keys in data:</div>
+  <pre id="outKeys">—</pre>
+
+  <div class="label">📦 Full raw data.data (WARNING: large):</div>
+  <pre id="outFull">—</pre>
+
+  <script>
+    async function doDebug() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) return;
+      document.getElementById('status').textContent = 'Loading...';
+      document.getElementById('outImagePost').textContent = '—';
+      document.getElementById('outImages').textContent = '—';
+      document.getElementById('outKeys').textContent = '—';
+      document.getElementById('outFull').textContent = '—';
+
+      try {
+        const res = await fetch('/api/debug', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const raw = await res.json();
+        document.getElementById('status').textContent = `code=${raw.code} | msg=${raw.msg}`;
+
+        const d = raw.data || {};
+
+        document.getElementById('outKeys').textContent = Object.keys(d).join('\n');
+
+        document.getElementById('outImages').textContent = JSON.stringify(d.images, null, 2);
+
+        const ipi = d.image_post_info;
+        if (ipi && ipi.images && ipi.images.length > 0) {
+          document.getElementById('outImagePost').textContent = JSON.stringify(ipi.images[0], null, 2);
+        } else {
+          document.getElementById('outImagePost').textContent = JSON.stringify(ipi, null, 2);
+        }
+
+        document.getElementById('outFull').textContent = JSON.stringify(d, null, 2);
+
+      } catch (e) {
+        document.getElementById('status').textContent = 'ERROR: ' + e.message;
+      }
+    }
+
+    document.getElementById('urlInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doDebug();
+    });
+  </script>
+</body>
+</html>
