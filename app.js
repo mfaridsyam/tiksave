@@ -140,16 +140,16 @@ async function downloadSingleImage(url, index) {
     saveBlobAsFile(blob, jpgFilename);
 
     if (motionUrl) {
-      const mp4Filename = `${baseName}.mov`;
-      await new Promise(r => setTimeout(r, 300));
+      const movFilename = `${baseName}.mov`;
+      await new Promise(r => setTimeout(r, 400));
       try {
-        const motionRes = await fetch(proxyUrl(motionUrl, mp4Filename));
+        const motionRes = await fetch(proxyUrl(motionUrl, movFilename));
         if (motionRes.ok) {
           const motionBlob = await motionRes.blob();
-          saveBlobAsFile(motionBlob, mp4Filename);
+          saveBlobAsFile(motionBlob, movFilename);
         }
       } catch {
-        window.open(proxyUrl(motionUrl, mp4Filename), '_blank');
+        window.open(proxyUrl(motionUrl, movFilename), '_blank');
       }
     }
   } catch (e) {
@@ -167,19 +167,15 @@ async function downloadAllImages() {
   if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }
   showProgress();
 
-  const hasLive = currentLivePhotos.some(Boolean);
-
   try {
-    const payload = {
-      images: currentImages,
-      username: currentUsername,
-    };
-    if (hasLive) payload.livePhotos = currentLivePhotos;
-
     const response = await fetch('/api/zip', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        images: currentImages,
+        livePhotos: currentLivePhotos,
+        username: currentUsername
+      })
     });
     if (!response.ok) throw new Error('Failed to create ZIP');
     const blob = await response.blob();
@@ -201,12 +197,12 @@ function renderImages(images, livePhotos) {
   if (!images || images.length === 0) { section.style.display = 'none'; return; }
 
   currentImages = images;
-  currentLivePhotos = livePhotos && livePhotos.length ? livePhotos : new Array(images.length).fill(null);
+  currentLivePhotos = livePhotos && livePhotos.length > 0 ? livePhotos : [];
 
-  const hasLive = currentLivePhotos.some(Boolean);
+  const hasLive = currentLivePhotos.length > 0;
 
   const allBtn = section.querySelector('.btn-dl-all');
-  if (allBtn && hasLive) allBtn.textContent = 'Download All (Live)';
+  if (allBtn) allBtn.textContent = hasLive ? 'Download All (Live Photo)' : 'Download All';
 
   grid.innerHTML = '';
   images.forEach((imgUrl, i) => {
@@ -216,7 +212,9 @@ function renderImages(images, livePhotos) {
     item.innerHTML = `
       <img src="${imgUrl}" alt="Foto ${i + 1}" loading="lazy" onerror="this.style.display='none'"/>
       ${isLive ? '<span class="live-badge">LIVE</span>' : ''}
-      <button class="img-overlay" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>${isLive ? '⬇ Live' : 'Save'}</span></button>
+      <button class="img-overlay" onclick="downloadSingleImage('${imgUrl}', ${i})">
+        <span>${isLive ? '⬇ Live' : 'Save'}</span>
+      </button>
     `;
     grid.appendChild(item);
   });

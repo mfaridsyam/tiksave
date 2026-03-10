@@ -13,14 +13,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'No images provided' });
   }
 
-  const allowed = ['tiktokcdn', 'tiktokcdn-us', 'tiktok.com', 'tikwm.com', 'muscdn.com'];
+  const allowed = ['tiktokcdn', 'tiktokcdn-us', 'tiktok.com', 'tikwm.com', 'muscdn.com', 'v16m.tiktokcdn'];
 
   for (const url of images) {
     if (!allowed.some(d => url.includes(d))) {
       return res.status(403).json({ error: 'Domain not allowed' });
     }
   }
-
   if (livePhotos && Array.isArray(livePhotos)) {
     for (const url of livePhotos) {
       if (url && !allowed.some(d => url.includes(d))) {
@@ -39,7 +38,7 @@ export default async function handler(req, res) {
     const archive = archiver('zip', { zlib: { level: 6 } });
     archive.pipe(res);
 
-    const hasLive = livePhotos && Array.isArray(livePhotos) && livePhotos.some(Boolean);
+    const hasLive = livePhotos && Array.isArray(livePhotos) && livePhotos.length > 0;
 
     for (let i = 0; i < images.length; i++) {
       const baseName = `${safeUsername}_image${i + 1}`;
@@ -72,7 +71,7 @@ export default async function handler(req, res) {
             archive.append(Buffer.from(buffer), { name: `${baseName}.mov` });
           }
         } catch (e) {
-          console.error(`Failed to fetch live photo motion ${i}:`, e);
+          console.error(`Failed to fetch live_image ${i}:`, e);
         }
       }
     }

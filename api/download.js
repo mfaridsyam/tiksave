@@ -41,28 +41,10 @@ async function fetchTikwm(url) {
 
   const v = data.data;
 
-  let images = [];
-  let livePhotos = [];
-
-  if (v.image_post_info?.images && v.image_post_info.images.length > 0) {
-    v.image_post_info.images.forEach(img => {
-      const urlList = img.display_image?.url_list || [];
-      images.push(urlList[0] || '');
-
-      const videoUrlList =
-        img.video?.play_addr?.url_list ||
-        img.video?.download_addr?.url_list ||
-        img.video?.url_list ||
-        null;
-      livePhotos.push(videoUrlList ? videoUrlList[0] : null);
-    });
-  } else if (v.images && v.images.length > 0) {
-    images = v.images;
-    livePhotos = new Array(v.images.length).fill(null);
-  }
+  const images = (v.images && v.images.length > 0) ? v.images : [];
+  const livePhotos = (v.live_images && v.live_images.length > 0) ? v.live_images : [];
 
   const downloadUrl = v.play || v.hdplay || '';
-  const hasLivePhotos = livePhotos.some(Boolean);
 
   return {
     success: true,
@@ -80,7 +62,7 @@ async function fetchTikwm(url) {
       music: v.music_info?.play || null,
       musicTitle: v.music_info?.title || '',
       images: images.filter(Boolean),
-      livePhotos: hasLivePhotos ? livePhotos : [],
+      livePhotos: livePhotos.filter(Boolean),
     }
   };
 }

@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const { url, filename } = req.query;
   if (!url) return res.status(400).json({ error: 'URL is required' });
 
-  const allowed = ['tiktokcdn', 'tiktokcdn-us', 'tiktok.com', 'tikwm.com', 'muscdn.com'];
+  const allowed = ['tiktokcdn', 'tiktokcdn-us', 'tiktok.com', 'tikwm.com', 'muscdn.com', 'v16m.tiktokcdn'];
   const isAllowed = allowed.some(domain => url.includes(domain));
   if (!isAllowed) {
     return res.status(403).json({ error: 'Domain not allowed' });
