@@ -559,3 +559,18 @@ footer a:hover { color: var(--text); }
 @media (max-width: 520px) {
   .howto-cards { grid-template-columns: 1fr; }
 }
+
+.live-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  pointer-events: none;
+  font-family: 'Sora', sans-serif;
+}

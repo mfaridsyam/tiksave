@@ -42,16 +42,27 @@ async function fetchTikwm(url) {
   const v = data.data;
 
   let images = [];
-  if (v.images && v.images.length > 0) {
-    images = v.images;
-  } else if (v.image_post_info?.images) {
-    images = v.image_post_info.images.map(img => {
+  let livePhotos = [];
+
+  if (v.image_post_info?.images && v.image_post_info.images.length > 0) {
+    v.image_post_info.images.forEach(img => {
       const urlList = img.display_image?.url_list || [];
-      return urlList[0] || '';
+      images.push(urlList[0] || '');
+
+      const videoUrlList =
+        img.video?.play_addr?.url_list ||
+        img.video?.download_addr?.url_list ||
+        img.video?.url_list ||
+        null;
+      livePhotos.push(videoUrlList ? videoUrlList[0] : null);
     });
+  } else if (v.images && v.images.length > 0) {
+    images = v.images;
+    livePhotos = new Array(v.images.length).fill(null);
   }
 
   const downloadUrl = v.play || v.hdplay || '';
+  const hasLivePhotos = livePhotos.some(Boolean);
 
   return {
     success: true,
@@ -69,6 +80,7 @@ async function fetchTikwm(url) {
       music: v.music_info?.play || null,
       musicTitle: v.music_info?.title || '',
       images: images.filter(Boolean),
+      livePhotos: hasLivePhotos ? livePhotos : [],
     }
   };
 }
@@ -123,6 +135,7 @@ async function fetchSSSTik(url) {
       music: musicMatch?.[1] || null,
       musicTitle: 'Audio',
       images: [],
+      livePhotos: [],
     }
   };
 }

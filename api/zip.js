@@ -1,6 +1,3 @@
-import { createWriteStream, mkdirSync, rmSync, existsSync } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
 import archiver from 'archiver';
 
 export default async function handler(req, res) {
@@ -11,15 +8,24 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { images, username } = req.body;
+  const { images, livePhotos, username } = req.body;
   if (!images || !Array.isArray(images) || images.length === 0) {
     return res.status(400).json({ error: 'No images provided' });
   }
 
   const allowed = ['tiktokcdn', 'tiktokcdn-us', 'tiktok.com', 'tikwm.com', 'muscdn.com'];
+
   for (const url of images) {
     if (!allowed.some(d => url.includes(d))) {
       return res.status(403).json({ error: 'Domain not allowed' });
+    }
+  }
+
+  if (livePhotos && Array.isArray(livePhotos)) {
+    for (const url of livePhotos) {
+      if (url && !allowed.some(d => url.includes(d))) {
+        return res.status(403).json({ error: 'Domain not allowed' });
+      }
     }
   }
 
@@ -33,7 +39,11 @@ export default async function handler(req, res) {
     const archive = archiver('zip', { zlib: { level: 6 } });
     archive.pipe(res);
 
+    const hasLive = livePhotos && Array.isArray(livePhotos) && livePhotos.some(Boolean);
+
     for (let i = 0; i < images.length; i++) {
+      const baseName = `${safeUsername}_image${i + 1}`;
+
       try {
         const imgRes = await fetch(images[i], {
           headers: {
@@ -41,11 +51,29 @@ export default async function handler(req, res) {
             'Referer': 'https://www.tiktok.com/',
           }
         });
-        if (!imgRes.ok) continue;
-        const buffer = await imgRes.arrayBuffer();
-        archive.append(Buffer.from(buffer), { name: `${safeUsername}_image${i + 1}.jpg` });
+        if (imgRes.ok) {
+          const buffer = await imgRes.arrayBuffer();
+          archive.append(Buffer.from(buffer), { name: `${baseName}.jpg` });
+        }
       } catch (e) {
         console.error(`Failed to fetch image ${i}:`, e);
+      }
+
+      if (hasLive && livePhotos[i]) {
+        try {
+          const motionRes = await fetch(livePhotos[i], {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+              'Referer': 'https://www.tiktok.com/',
+            }
+          });
+          if (motionRes.ok) {
+            const buffer = await motionRes.arrayBuffer();
+            archive.append(Buffer.from(buffer), { name: `${baseName}.mov` });
+          }
+        } catch (e) {
+          console.error(`Failed to fetch live photo motion ${i}:`, e);
+        }
       }
     }
 

@@ -5,6 +5,7 @@ const resultCard = document.getElementById('resultCard');
 const progressBar = document.getElementById('progressBar');
 
 let currentImages = [];
+let currentLivePhotos = [];
 let currentUsername = 'unknown';
 
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchVideo(); });
@@ -61,6 +62,7 @@ function resetUI() {
   errorBox.classList.remove('active');
   resultCard.classList.remove('active');
   currentImages = [];
+  currentLivePhotos = [];
 }
 
 function saveBlobAsFile(blob, filename) {
@@ -127,14 +129,31 @@ async function downloadAudio(btn) {
 }
 
 async function downloadSingleImage(url, index) {
-  const filename = `${currentUsername}_image${index + 1}.jpg`;
+  const baseName = `${currentUsername}_image${index + 1}`;
+  const jpgFilename = `${baseName}.jpg`;
+  const motionUrl = currentLivePhotos[index] || null;
+
   showProgress();
   try {
-    const response = await fetch(proxyUrl(url, filename));
+    const response = await fetch(proxyUrl(url, jpgFilename));
     const blob = await response.blob();
-    saveBlobAsFile(blob, filename);
+    saveBlobAsFile(blob, jpgFilename);
+
+    if (motionUrl) {
+      const mp4Filename = `${baseName}.mov`;
+      await new Promise(r => setTimeout(r, 300));
+      try {
+        const motionRes = await fetch(proxyUrl(motionUrl, mp4Filename));
+        if (motionRes.ok) {
+          const motionBlob = await motionRes.blob();
+          saveBlobAsFile(motionBlob, mp4Filename);
+        }
+      } catch {
+        window.open(proxyUrl(motionUrl, mp4Filename), '_blank');
+      }
+    }
   } catch (e) {
-    window.open(proxyUrl(url, filename), '_blank');
+    window.open(proxyUrl(url, jpgFilename), '_blank');
   } finally {
     hideProgress();
   }
@@ -148,11 +167,19 @@ async function downloadAllImages() {
   if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }
   showProgress();
 
+  const hasLive = currentLivePhotos.some(Boolean);
+
   try {
+    const payload = {
+      images: currentImages,
+      username: currentUsername,
+    };
+    if (hasLive) payload.livePhotos = currentLivePhotos;
+
     const response = await fetch('/api/zip', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ images: currentImages, username: currentUsername })
+      body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error('Failed to create ZIP');
     const blob = await response.blob();
@@ -160,14 +187,7 @@ async function downloadAllImages() {
   } catch (e) {
     for (let i = 0; i < currentImages.length; i++) {
       await new Promise(r => setTimeout(r, 500));
-      try {
-        const filename = `${currentUsername}_image${i + 1}.jpg`;
-        const r = await fetch(proxyUrl(currentImages[i], filename));
-        const bl = await r.blob();
-        saveBlobAsFile(bl, filename);
-      } catch {
-        window.open(currentImages[i], '_blank');
-      }
+      await downloadSingleImage(currentImages[i], i);
     }
   } finally {
     if (btn) { btn.textContent = orig; btn.disabled = false; }
@@ -175,18 +195,28 @@ async function downloadAllImages() {
   }
 }
 
-function renderImages(images) {
+function renderImages(images, livePhotos) {
   const section = document.getElementById('imagesSection');
   const grid = document.getElementById('imagesGrid');
   if (!images || images.length === 0) { section.style.display = 'none'; return; }
+
   currentImages = images;
+  currentLivePhotos = livePhotos && livePhotos.length ? livePhotos : new Array(images.length).fill(null);
+
+  const hasLive = currentLivePhotos.some(Boolean);
+
+  const allBtn = section.querySelector('.btn-dl-all');
+  if (allBtn && hasLive) allBtn.textContent = 'Download All (Live)';
+
   grid.innerHTML = '';
   images.forEach((imgUrl, i) => {
+    const isLive = !!(currentLivePhotos[i]);
     const item = document.createElement('div');
     item.className = 'img-item';
     item.innerHTML = `
       <img src="${imgUrl}" alt="Foto ${i + 1}" loading="lazy" onerror="this.style.display='none'"/>
-      <button class="img-overlay" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>Save</span></button>
+      ${isLive ? '<span class="live-badge">LIVE</span>' : ''}
+      <button class="img-overlay" onclick="downloadSingleImage('${imgUrl}', ${i})"><span>${isLive ? '⬇ Live' : 'Save'}</span></button>
     `;
     grid.appendChild(item);
   });
@@ -245,7 +275,7 @@ async function fetchVideo() {
       dlMusic.style.display = 'none';
     }
 
-    renderImages(v.images || []);
+    renderImages(v.images || [], v.livePhotos || []);
     resultCard.classList.add('active');
 
   } catch (err) {
