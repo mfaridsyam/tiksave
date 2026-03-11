@@ -17,7 +17,10 @@
   <link rel="icon" type="image/ico" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192.png"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -59,12 +62,12 @@
       <div class="result-inner">
         <div class="result-media">
           <div class="thumb-wrap">
-            <img id="resCover" src="" alt="Cover"/>
+            <img id="resCover" src="" alt="Cover" loading="lazy" decoding="async"/>
             <span class="thumb-duration" id="resDuration"></span>
           </div>
           <div class="result-info">
             <div class="result-author">
-              <img id="resAvatar" class="author-avatar" src="" alt="Avatar"/>
+              <img id="resAvatar" class="author-avatar" src="" alt="Avatar" loading="lazy" decoding="async"/>
               <div>
                 <div class="author-name" id="resAuthor"></div>
                 <div class="author-handle" id="resHandle"></div>
@@ -123,6 +126,6 @@
   </footer>
 </div>
 
-<script src="app.js"></script>
+<script src="app.js" defer></script>
 </body>
 </html>
