@@ -61,6 +61,7 @@ async function fetchTikwm(url) {
       downloadUrl,
       music: v.music_info?.play || null,
       musicTitle: v.music_info?.title || '',
+      timestamp: v.create_time || null,
       images: images.filter(Boolean),
       livePhotos: livePhotos.filter(Boolean),
     }
@@ -116,6 +117,7 @@ async function fetchSSSTik(url) {
       downloadUrl,
       music: musicMatch?.[1] || null,
       musicTitle: 'Audio',
+      timestamp: null,
       images: [],
       livePhotos: [],
     }

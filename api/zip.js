@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { images, livePhotos, username } = req.body;
+  const { images, livePhotos, username, postDateTime } = req.body;
   if (!images || !Array.isArray(images) || images.length === 0) {
     return res.status(400).json({ error: 'No images provided' });
   }
@@ -30,7 +30,10 @@ export default async function handler(req, res) {
 
   try {
     const safeUsername = (username || 'tiksave').replace(/[^a-zA-Z0-9_]/g, '');
-    const zipFilename = `${safeUsername}_images.zip`;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+    const fileDtStr = (postDateTime || todayStr).replace(/[^a-zA-Z0-9_]/g, '');
+    const zipFilename = `${safeUsername}_${todayStr}.zip`;
 
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${zipFilename}"`);
@@ -41,7 +44,8 @@ export default async function handler(req, res) {
     const hasLive = livePhotos && Array.isArray(livePhotos) && livePhotos.length > 0;
 
     for (let i = 0; i < images.length; i++) {
-      const baseName = `${safeUsername}_image${i + 1}`;
+      const suffix = images.length > 1 ? `_${i + 1}` : '';
+      const baseName = `${safeUsername}_${fileDtStr}${suffix}`;
 
       try {
         const imgRes = await fetch(images[i], {

@@ -7,6 +7,7 @@ const progressBar = document.getElementById('progressBar');
 let currentImages = [];
 let currentLivePhotos = [];
 let currentUsername = 'unknown';
+let currentMediaTimestamp = null;
 
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchVideo(); });
 urlInput.addEventListener('input', updatePasteBtn);
@@ -58,11 +59,54 @@ function formatDuration(s) {
   return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 }
 
+function tsToDate(ts) {
+  if (!ts) return null;
+  let date;
+  if (typeof ts === 'number') {
+    date = ts < 1e12 ? new Date(ts * 1000) : new Date(ts);
+  } else if (typeof ts === 'string' && /^\d+$/.test(ts)) {
+    const n = parseInt(ts);
+    date = n < 1e12 ? new Date(n * 1000) : new Date(n);
+  } else {
+    date = new Date(ts);
+  }
+  return isNaN(date.getTime()) ? null : date;
+}
+
+function formatTimestamp(ts) {
+  const date = tsToDate(ts);
+  if (!date) return '';
+  return date.toLocaleString('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function formatFileDateTime(ts) {
+  const date = tsToDate(ts);
+  if (!date) return null;
+  const Y = date.getFullYear();
+  const M = String(date.getMonth() + 1).padStart(2, '0');
+  const D = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${Y}${M}${D}_${h}${m}`;
+}
+
+function formatTodayDate() {
+  const d = new Date();
+  const Y = d.getFullYear();
+  const M = String(d.getMonth() + 1).padStart(2, '0');
+  const D = String(d.getDate()).padStart(2, '0');
+  return `${Y}${M}${D}`;
+}
+
 function resetUI() {
   errorBox.classList.remove('active');
   resultCard.classList.remove('active');
   currentImages = [];
   currentLivePhotos = [];
+  currentMediaTimestamp = null;
 }
 
 function saveBlobAsFile(blob, filename) {
@@ -129,7 +173,9 @@ async function downloadAudio(btn) {
 }
 
 async function downloadSingleImage(url, index) {
-  const baseName = `${currentUsername}_image${index + 1}`;
+  const dtStr = formatFileDateTime(currentMediaTimestamp) || formatTodayDate();
+  const suffix = currentImages.length > 1 ? `_${index + 1}` : '';
+  const baseName = `${currentUsername}_${dtStr}${suffix}`;
   const jpgFilename = `${baseName}.jpg`;
   const motionUrl = currentLivePhotos[index] || null;
 
@@ -168,18 +214,21 @@ async function downloadAllImages() {
   showProgress();
 
   try {
+    const dtStr = formatFileDateTime(currentMediaTimestamp) || formatTodayDate();
+    const zipName = `${currentUsername}_${formatTodayDate()}.zip`;
     const response = await fetch('/api/zip', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         images: currentImages,
         livePhotos: currentLivePhotos,
-        username: currentUsername
+        username: currentUsername,
+        postDateTime: dtStr
       })
     });
     if (!response.ok) throw new Error('Failed to create ZIP');
     const blob = await response.blob();
-    saveBlobAsFile(blob, `${currentUsername}_images.zip`);
+    saveBlobAsFile(blob, zipName);
   } catch (e) {
     for (let i = 0; i < currentImages.length; i++) {
       await new Promise(r => setTimeout(r, 500));
@@ -273,10 +322,23 @@ async function fetchVideo() {
     document.getElementById('resLikes').textContent = formatNum(v.likes) + ' likes';
     document.getElementById('resComments').textContent = formatNum(v.comments) + ' comments';
 
+    currentMediaTimestamp = v.timestamp || null;
+    const tsFormatted = formatTimestamp(v.timestamp);
+    let resDateEl = document.getElementById('resDate');
+    if (!resDateEl) {
+      resDateEl = document.createElement('div');
+      resDateEl.id = 'resDate';
+      resDateEl.className = 'result-date';
+      const statsEl = document.querySelector('.result-stats');
+      if (statsEl) statsEl.insertAdjacentElement('afterend', resDateEl);
+    }
+    resDateEl.textContent = tsFormatted || '';
+    resDateEl.style.display = tsFormatted ? '' : 'none';
+
     const dlVideo = document.getElementById('dlVideoBtn');
     if (v.downloadUrl) {
       dlVideo.dataset.url = v.downloadUrl;
-      dlVideo.dataset.filename = `${currentUsername}_${ts}.mp4`;
+      dlVideo.dataset.filename = `${currentUsername}_${formatFileDateTime(v.timestamp) || formatTodayDate()}.mp4`;
       dlVideo.style.display = 'flex';
     } else {
       dlVideo.style.display = 'none';
@@ -285,7 +347,7 @@ async function fetchVideo() {
     const dlMusic = document.getElementById('dlMusicBtn');
     if (v.music) {
       dlMusic.dataset.url = v.music;
-      dlMusic.dataset.filename = `${currentUsername}_audio_${ts}.mp3`;
+      dlMusic.dataset.filename = `${currentUsername}_audio_${formatFileDateTime(v.timestamp) || formatTodayDate()}.mp3`;
       dlMusic.textContent = v.musicTitle ? v.musicTitle.substring(0, 26) : 'Audio';
       dlMusic.style.display = 'flex';
     } else {

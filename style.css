@@ -319,6 +319,13 @@ h1 span {
   font-weight: 500;
 }
 
+.result-date {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 4px;
+}
+
 .divider { height: 1px; background: var(--border); }
 
 .dl-actions {
