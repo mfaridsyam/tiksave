@@ -574,3 +574,26 @@ footer a:hover { color: var(--text); }
   pointer-events: none;
   font-family: 'Sora', sans-serif;
 }
+.photos-info {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 0.71rem;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+.photos-info.active { display: flex; }
+.photos-info--live {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+.photos-info--multi {
+  background: var(--accent-green-light);
+  border: 1px solid rgba(45,106,79,0.18);
+  color: #1a4a33;
+}
+.photos-info-icon { flex-shrink: 0; font-size: 0.75rem; font-weight: 700; }
+.photos-info strong { font-weight: 600; }

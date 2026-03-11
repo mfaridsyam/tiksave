@@ -200,9 +200,28 @@ function renderImages(images, livePhotos) {
   currentLivePhotos = livePhotos && livePhotos.length > 0 ? livePhotos : [];
 
   const hasLive = currentLivePhotos.length > 0;
+  const isMultiple = images.length > 1;
 
   const allBtn = section.querySelector('.btn-dl-all');
-  if (allBtn) allBtn.textContent = hasLive ? 'Download All (Live Photo)' : 'Download All';
+  if (allBtn) allBtn.textContent = 'Download All (ZIP)';
+
+  let infoEl = section.querySelector('.photos-info');
+  if (!infoEl) {
+    infoEl = document.createElement('div');
+    infoEl.className = 'photos-info';
+    section.querySelector('.images-header').after(infoEl);
+  }
+
+  if (hasLive) {
+    infoEl.className = 'photos-info photos-info--live active';
+    infoEl.innerHTML = `<span class="photos-info-icon">⚠</span><span><strong>Live Photo</strong> — JPG + MOV terpisah, tidak otomatis tergabung di galeri iPhone.</span>`;
+  } else if (isMultiple) {
+    infoEl.className = 'photos-info photos-info--multi active';
+    infoEl.innerHTML = `<span class="photos-info-icon">↓</span><span><strong>${images.length} foto</strong> — gunakan "Download All" untuk ZIP.</span>`;
+  } else {
+    infoEl.className = 'photos-info';
+    infoEl.innerHTML = '';
+  }
 
   grid.innerHTML = '';
   images.forEach((imgUrl, i) => {
