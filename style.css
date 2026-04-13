@@ -72,21 +72,20 @@ nav {
 }
 
 .logo {
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-  color: var(--text);
+  display: flex;
+  align-items: center;
 }
 
-.logo-dot {
-  display: inline-block;
-  width: 6px; height: 6px;
-  background: var(--accent-green);
-  border-radius: 50%;
-  margin-left: 2px;
-  vertical-align: middle;
-  position: relative;
-  top: -2px;
+.logo-img {
+  height: 32px;
+  width: auto;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
 }
 
 .nav-badge {
